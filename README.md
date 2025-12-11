@@ -1,5 +1,5 @@
-# liqueth
-Monorepo for Liqueth, a decentralized Meta Hub Exchange on EVM where LQTH represents both liquidity and ownership.
+# Uniteum
+Uniteum is an algebraic liquidity protocol on Ethereum.
 
 ### **1. Environment Setup**
 
@@ -19,15 +19,30 @@ nvm use --lts
 
 #### **Clone the Repository & Install Dependencies:**
 ```bash
-git clone https://github.com/liqueth/liqueth.git
-git clone git@github.com:liqueth/liqueth.git
-cd liqueth
+git clone https://github.com/uniteum/uniteum.git
+git clone git@github.com:uniteum/uniteum.git
+cd uniteum
 npm install
 ```
 
-Add `.env` to `.gitignore` to prevent sensitive data leaks:
+### Set environment variables
+
+Set the following environment variables (in your .bashrc).
+
 ```bash
-echo ".env" >> .gitignore
+export tx_key=<YOUR_PRIVATE_WALLET_KEY>
+export ETHERSCAN_API_KEY=<YOUR_ETHERSCAN_API_KEY>
+```
+
+The environment variable tx_key is the private key of the Ethereum account you want to use to initiate transactions such as deploying contracts.
+Get your ETHERSCAN_API_KEY at [Etherscan](https://etherscan.io/myaccount).
+
+Other environment variables that will come into play include the following.
+
+```bash
+export chain=97 # BNB testnet
+export chain=137 # Polygon
+export chain=11155111 # Sepolia, set to desired chain id
 ```
 
 ### Deploy
