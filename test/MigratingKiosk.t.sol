@@ -164,7 +164,7 @@ contract MigratingKioskTest is KioskBaseTest {
         uint256 inventory
     ) public returns (MigratingKiosk kiosk, uint256 actual, bool soldOut) {
         value = value % 1000 ether;
-        inventory = inventory % token.totalSupply();
+        inventory = inventory % token.balanceOf(address(creator));
 
         console.log("test_BuyRandom(%s, %s)", value, inventory);
 
