@@ -5,6 +5,9 @@ pragma solidity ^0.8.30;
 import {User} from "./User.sol";
 import {FixedKiosk, Kiosk} from "../src/FixedKiosk.sol";
 import {DiscountKiosk} from "../src/DiscountKiosk.sol";
+import {MigratingKiosk} from "../src/MigratingKiosk.sol";
+import {IKiosk} from "../src/IKiosk.sol";
+import {IMigratable} from "../src/IMigratable.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract KioskUser is User {
@@ -29,6 +32,14 @@ contract KioskUser is User {
         returns (DiscountKiosk kiosk)
     {
         kiosk = prototype.create(token, price, capacity_);
+    }
+
+    // Migrating Kiosk
+    function createMigratingKiosk(MigratingKiosk prototype, IKiosk sourceKiosk_, IMigratable destinationToken_)
+        external
+        returns (MigratingKiosk kiosk)
+    {
+        kiosk = prototype.create(sourceKiosk_, destinationToken_);
     }
 
     function buy(Kiosk kiosk) external payable returns (uint256 q, bool soldOut) {
