@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.30;
 
+import {IKiosk} from "./IKiosk.sol";
 import {Prototype} from "./Prototype.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
@@ -12,7 +13,7 @@ import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/Reentrancy
  * @dev The creator/owner can collect native tokens earned by the kiosk and reclaim inventory held by the kiosk.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
-abstract contract Kiosk is Prototype, ReentrancyGuardTransient {
+abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
     using SafeERC20 for IERC20;
 
     /**
@@ -118,48 +119,4 @@ abstract contract Kiosk is Prototype, ReentrancyGuardTransient {
     function _onlyOwner() private view {
         if (msg.sender != owner) revert NotOwner();
     }
-
-    /**
-     * @notice Emit when a kiosk runs out of goods during a buy.
-     * @param buyer The caller who bought the goods.
-     * @param valueSent The amount of native tokens sent.
-     * @param quantityBought The quantity of goods bought.
-     */
-    event KioskSoldOut(address buyer, uint256 valueSent, uint256 quantityBought);
-
-    /**
-     * @notice Emit when goods are bought from the kiosk.
-     * @param buyer The caller who bought the goods.
-     * @param valueSent The amount of native tokens sent.
-     * @param quantityBought The quantity of goods bought.
-     */
-    event KioskBuy(address buyer, uint256 valueSent, uint256 quantityBought);
-
-    /**
-     * @notice Emitted when a kiosk is created.
-     * @param creator Account that receives the initial kiosk shares.
-     * @param goods ERC-20 token being sold by this kiosk.
-     * @param listPrice Fixed price in native tokens per unit of goods.
-     */
-    event KioskCreated(address creator, IERC20 goods, uint256 listPrice);
-
-    /**
-     * @notice Revert when the quantity bought is zero.
-     */
-    error ZeroBought();
-
-    /**
-     * @notice Collecting native tokens in this Kiosk failed.
-     */
-    error CollectFailed();
-
-    /**
-     * @notice Revert when caller is not the owner.
-     */
-    error NotOwner();
-
-    /**
-     * @notice Reject unknown function calls or unexpected calldata.
-     */
-    error UnknownFunctionCalledOrHexDataSent();
 }

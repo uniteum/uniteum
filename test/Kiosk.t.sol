@@ -4,6 +4,7 @@ pragma solidity ^0.8.30;
 
 import {KioskBaseTest} from "./KioskBase.t.sol";
 import {FixedKiosk, Kiosk} from "../src/FixedKiosk.sol";
+import {IKiosk} from "../src/IKiosk.sol";
 import {console} from "forge-std/Test.sol";
 
 contract KioskTest is KioskBaseTest {
@@ -93,7 +94,7 @@ contract KioskTest is KioskBaseTest {
         console.log("test_BuyRandom(%s, %s, %s)", price, value, inventory);
         kiosk = creator.createKiosk(prototype, token, price);
         vm.deal(address(buyer), price * inventory / 2);
-        vm.expectRevert(Kiosk.ZeroBought.selector);
+        vm.expectRevert(IKiosk.ZeroBought.selector);
         (actual, soldOut) = buyer.buy{value: value}(kiosk);
         assertEq(token.balanceOf(address(buyer)), actual);
     }
