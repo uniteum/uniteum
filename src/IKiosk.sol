@@ -67,7 +67,11 @@ interface IKiosk {
      * @param valueSent The amount of native tokens sent.
      * @param quantityBought The quantity of goods bought.
      */
-    event KioskSoldOut(address buyer, uint256 valueSent, uint256 quantityBought);
+    event KioskSoldOut(
+        address buyer,
+        uint256 valueSent,
+        uint256 quantityBought
+    );
 
     /**
      * @notice Emit when goods are bought from the kiosk.

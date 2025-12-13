@@ -32,38 +32,70 @@ contract MigratingKioskTest is KioskBaseTest {
     }
 
     function test_Create() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
         assertEq(kiosk.listPrice(), PRICE);
         assertEq(address(kiosk.goods()), address(destinationToken));
         assertEq(address(kiosk.sourceKiosk()), address(sourceKiosk));
         assertEq(address(kiosk.destinationToken()), address(destinationToken));
     }
 
-    function test_Quote() public returns (MigratingKiosk kiosk, uint256 value, uint256 actual, bool soldOut) {
-        kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+    function test_Quote()
+        public
+        returns (
+            MigratingKiosk kiosk,
+            uint256 value,
+            uint256 actual,
+            bool soldOut
+        )
+    {
+        kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
         value = 3 ether;
-        uint256 expected = 1 ether * value / PRICE;
+        uint256 expected = (1 ether * value) / PRICE;
         (actual, soldOut) = kiosk.quote(value);
         assertEq(actual, expected);
         assertEq(soldOut, false);
     }
 
     function test_Inventory() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
         uint256 inv = kiosk.inventory();
         assertEq(inv, 5_000 ether);
         assertEq(inv, sourceKiosk.inventory());
     }
 
     function test_Balance() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
         vm.deal(address(sourceKiosk), 100 ether);
         uint256 bal = kiosk.balance();
         assertEq(bal, 100 ether);
         assertEq(bal, sourceKiosk.balance());
     }
 
-    function test_Buy() public returns (MigratingKiosk kiosk, uint256 value, uint256 actual, bool soldOut) {
+    function test_Buy()
+        public
+        returns (
+            MigratingKiosk kiosk,
+            uint256 value,
+            uint256 actual,
+            bool soldOut
+        )
+    {
         (kiosk, value, actual, soldOut) = test_Quote();
 
         uint256 buyerBalanceBefore = destinationToken.balanceOf(address(buyer));
@@ -72,7 +104,10 @@ contract MigratingKioskTest is KioskBaseTest {
         buyer.buy{value: value}(Kiosk(payable(address(kiosk))));
 
         // Buyer should receive destination tokens
-        assertEq(destinationToken.balanceOf(address(buyer)), buyerBalanceBefore + actual);
+        assertEq(
+            destinationToken.balanceOf(address(buyer)),
+            buyerBalanceBefore + actual
+        );
 
         // Source kiosk should have less inventory
         assertEq(sourceKiosk.inventory(), kioskInventoryBefore - actual);
@@ -82,63 +117,97 @@ contract MigratingKioskTest is KioskBaseTest {
     }
 
     function test_BuyMultiple() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
 
         uint256 value1 = 1 ether;
         uint256 value2 = 2 ether;
 
-        (uint256 expected1,) = kiosk.quote(value1);
+        (uint256 expected1, ) = kiosk.quote(value1);
         buyer.buy{value: value1}(Kiosk(payable(address(kiosk))));
         assertEq(destinationToken.balanceOf(address(buyer)), expected1);
 
-        (uint256 expected2,) = kiosk.quote(value2);
+        (uint256 expected2, ) = kiosk.quote(value2);
         buyer.buy{value: value2}(Kiosk(payable(address(kiosk))));
-        assertEq(destinationToken.balanceOf(address(buyer)), expected1 + expected2);
+        assertEq(
+            destinationToken.balanceOf(address(buyer)),
+            expected1 + expected2
+        );
     }
 
-    function test_BuyViaReceive() public returns (MigratingKiosk kiosk, uint256 value, uint256 actual, bool soldOut) {
+    function test_BuyViaReceive()
+        public
+        returns (
+            MigratingKiosk kiosk,
+            uint256 value,
+            uint256 actual,
+            bool soldOut
+        )
+    {
         (kiosk, value, actual, soldOut) = test_Quote();
 
         uint256 buyerBalanceBefore = destinationToken.balanceOf(address(buyer));
 
         buyer.buyViaReceive{value: value}(Kiosk(payable(address(kiosk))));
 
-        assertEq(destinationToken.balanceOf(address(buyer)), buyerBalanceBefore + actual);
+        assertEq(
+            destinationToken.balanceOf(address(buyer)),
+            buyerBalanceBefore + actual
+        );
     }
 
-    function test_BuyRandom(uint256 value, uint256 inventory)
-        public
-        returns (MigratingKiosk kiosk, uint256 actual, bool soldOut)
-    {
+    function test_BuyRandom(
+        uint256 value,
+        uint256 inventory
+    ) public returns (MigratingKiosk kiosk, uint256 actual, bool soldOut) {
         value = value % 1000 ether;
         inventory = inventory % token.totalSupply();
 
         console.log("test_BuyRandom(%s, %s)", value, inventory);
 
         // Create fresh source kiosk with specific inventory
-        FixedKiosk freshSourceKiosk = creator.createKiosk(sourceKioskPrototype, token, PRICE);
+        FixedKiosk freshSourceKiosk = creator.createKiosk(
+            sourceKioskPrototype,
+            token,
+            PRICE
+        );
         creator.give(address(freshSourceKiosk), inventory, token);
 
-        kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(freshSourceKiosk)), destinationToken);
+        kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(freshSourceKiosk)),
+            destinationToken
+        );
 
         vm.deal(address(buyer), value);
         (actual, soldOut) = buyer.quote(Kiosk(payable(address(kiosk))), value);
 
         if (actual > 0) {
-            (actual, soldOut) = buyer.buy{value: value}(Kiosk(payable(address(kiosk))));
+            (actual, soldOut) = buyer.buy{value: value}(
+                Kiosk(payable(address(kiosk)))
+            );
             assertEq(destinationToken.balanceOf(address(buyer)), actual);
         }
     }
 
     function test_BuyUntilSoldOut() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
 
         uint256 totalInventory = sourceKiosk.inventory();
-        uint256 valueNeeded = totalInventory * PRICE / 1 ether;
+        uint256 valueNeeded = (totalInventory * PRICE) / 1 ether;
 
         vm.deal(address(buyer), valueNeeded);
 
-        (uint256 bought, bool soldOut) = buyer.buy{value: valueNeeded}(Kiosk(payable(address(kiosk))));
+        (uint256 bought, bool soldOut) = buyer.buy{value: valueNeeded}(
+            Kiosk(payable(address(kiosk)))
+        );
 
         assertTrue(soldOut);
         assertEq(bought, totalInventory);
@@ -147,21 +216,33 @@ contract MigratingKioskTest is KioskBaseTest {
     }
 
     function test_ReclaimReverts() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
 
         vm.expectRevert(MigratingKiosk.NotSupported.selector);
         creator.reclaim(Kiosk(payable(address(kiosk))), 50 ether);
     }
 
     function test_CollectReverts() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
 
         vm.expectRevert(MigratingKiosk.NotSupported.selector);
         creator.collect(Kiosk(payable(address(kiosk))), 50 ether);
     }
 
     function test_BoughtZeroReverts() public {
-        MigratingKiosk kiosk = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
+        MigratingKiosk kiosk = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
 
         // Try to buy with 0 value
         vm.expectRevert(IKiosk.ZeroBought.selector);
@@ -171,14 +252,29 @@ contract MigratingKioskTest is KioskBaseTest {
     function test_MultipleKiosksIndependent() public {
         // Create second source kiosk with different token
         TestToken token2 = creator.newToken("TEST2", 3 * CAPACITY);
-        FixedKiosk sourceKiosk2 = creator.createKiosk(sourceKioskPrototype, token2, PRICE * 2);
+        FixedKiosk sourceKiosk2 = creator.createKiosk(
+            sourceKioskPrototype,
+            token2,
+            PRICE * 2
+        );
         creator.give(address(sourceKiosk2), 5_000 ether, token2);
 
-        MockMigratableToken destinationToken2 = new MockMigratableToken("DEST2", token2);
+        MockMigratableToken destinationToken2 = new MockMigratableToken(
+            "DEST2",
+            token2
+        );
 
         // Create two migrating kiosks
-        MigratingKiosk kiosk1 = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk)), destinationToken);
-        MigratingKiosk kiosk2 = creator.createMigratingKiosk(prototype, IKiosk(address(sourceKiosk2)), destinationToken2);
+        MigratingKiosk kiosk1 = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk)),
+            destinationToken
+        );
+        MigratingKiosk kiosk2 = creator.createMigratingKiosk(
+            prototype,
+            IKiosk(address(sourceKiosk2)),
+            destinationToken2
+        );
 
         // Verify they're independent
         assertEq(address(kiosk1.sourceKiosk()), address(sourceKiosk));
@@ -188,8 +284,12 @@ contract MigratingKioskTest is KioskBaseTest {
 
         // Buy from both
         uint256 value = 1 ether;
-        (uint256 q1,) = buyer.buy{value: value}(Kiosk(payable(address(kiosk1))));
-        (uint256 q2,) = buyer.buy{value: value}(Kiosk(payable(address(kiosk2))));
+        (uint256 q1, ) = buyer.buy{value: value}(
+            Kiosk(payable(address(kiosk1)))
+        );
+        (uint256 q2, ) = buyer.buy{value: value}(
+            Kiosk(payable(address(kiosk2)))
+        );
 
         assertEq(destinationToken.balanceOf(address(buyer)), q1);
         assertEq(destinationToken2.balanceOf(address(buyer)), q2);
