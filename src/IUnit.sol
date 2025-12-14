@@ -3,6 +3,7 @@
 pragma solidity ^0.8.30;
 
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IMigratable} from "./IMigratable.sol";
 
 /**
  * @title IUnit — A universal liquidity system based on symbolic units.
@@ -55,7 +56,7 @@ import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extens
  * - Anchored units are custodial: underlying tokens are held by this contract.
  * - This system uses no price oracles or off-chain dependencies.
  */
-interface IUnit is IERC20Metadata {
+interface IUnit is IERC20Metadata, IMigratable {
     /**
      * @notice Compute the constant product invariant for a reciprocal pair.
      * The implied price for the unit is w/u, and w/v for its reciprocal.
@@ -71,7 +72,10 @@ interface IUnit is IERC20Metadata {
      * @return v Total supply of its reciprocal.
      * @return w sqrt(u * v).
      */
-    function invariant() external view returns (uint256 u, uint256 v, uint256 w);
+    function invariant()
+        external
+        view
+        returns (uint256 u, uint256 v, uint256 w);
 
     /**
      * @notice Return the constant product invariant for a pair.
@@ -81,7 +85,9 @@ interface IUnit is IERC20Metadata {
      * @return v Total supply of its reciprocal.
      * @return w sqrt(u * v).
      */
-    function invariant(IUnit V) external view returns (IUnit W, uint256 u, uint256 v, uint256 w);
+    function invariant(
+        IUnit V
+    ) external view returns (IUnit W, uint256 u, uint256 v, uint256 w);
 
     /**
      * @notice Compute the change of the caller's 1 balance that would result from forging this unit.
@@ -101,7 +107,12 @@ interface IUnit is IERC20Metadata {
      * @return W Product of this unit and V.
      * @return dw Signed change of caller's 1 balance.
      */
-    function forgeQuote(IUnit V, int256 du, int256 dv) external view returns (IUnit W, int256 dw);
+    function forgeQuote(
+        IUnit V,
+        int256 du,
+        int256 dv
+    ) external view returns (IUnit W, int256 dw);
+
     /**
      * @notice Compute the change of the caller's 1 balance that would result from forging this unit.
      *
@@ -135,7 +146,11 @@ interface IUnit is IERC20Metadata {
      * @return W Product of this unit and V.
      * @return dw Signed delta of 1 minted/burned for the caller.
      */
-    function forge(IUnit V, int256 du, int256 dv) external returns (IUnit W, int256 dw);
+    function forge(
+        IUnit V,
+        int256 du,
+        int256 dv
+    ) external returns (IUnit W, int256 dw);
 
     /**
      * @notice Mint/burn combinations of this unit, its reciprocal and 1.
@@ -158,7 +173,9 @@ interface IUnit is IERC20Metadata {
      * @return unit the IUnit for the given expression.
      * @return symbol the canonical form of the string representation of the unit.
      */
-    function product(string memory expression) external view returns (IUnit unit, string memory symbol);
+    function product(
+        string memory expression
+    ) external view returns (IUnit unit, string memory symbol);
 
     /**
      * @notice Create a new unit if it does not exist.
@@ -174,7 +191,9 @@ interface IUnit is IERC20Metadata {
      * @return unit The IUnit representing the product.
      * @return symbol the canonical form of the string representation of the unit.
      */
-    function product(IUnit multiplier) external view returns (IUnit unit, string memory symbol);
+    function product(
+        IUnit multiplier
+    ) external view returns (IUnit unit, string memory symbol);
 
     /**
      * @notice Find or multiply the product of this unit with a multiplier unit.
@@ -190,7 +209,9 @@ interface IUnit is IERC20Metadata {
      * @return unit the IUnit anchored to the given token.
      * @return symbol the canonical form of the string representation of the unit.
      */
-    function anchoredPredict(IERC20 token) external view returns (IUnit unit, string memory symbol);
+    function anchoredPredict(
+        IERC20 token
+    ) external view returns (IUnit unit, string memory symbol);
 
     /**
      * @notice Create an anchored unit if it does not exist.
@@ -205,7 +226,9 @@ interface IUnit is IERC20Metadata {
      * @param token to be anchored to.
      * @return symbol the canonical form of the string representation of the unit.
      */
-    function anchoredSymbol(IERC20 token) external pure returns (string memory symbol);
+    function anchoredSymbol(
+        IERC20 token
+    ) external pure returns (string memory symbol);
 
     /**
      * @notice The identity unit "1".
@@ -230,20 +253,6 @@ interface IUnit is IERC20Metadata {
      * @return upstream token this contract accepts for migration.
      */
     function UPSTREAM_ONE() external view returns (IERC20 upstream);
-
-    /**
-     * @notice Migrate upstream 1's to this 1.
-     * @dev Only callable on 1. Other units revert.
-     * @param units The number of 1's to migrate.
-     */
-    function migrate(uint256 units) external;
-
-    /**
-     * @notice Reverse migrate this 1 to it's upstream 1.
-     * @dev Only callable on 1. Other units revert.
-     * @param units The number of 1's to migrate.
-     */
-    function unmigrate(uint256 units) external;
 
     /**
      * @dev Revert when called with duplicate units.
@@ -276,7 +285,12 @@ interface IUnit is IERC20Metadata {
      * @param hash used to compute the address of the unit.
      * @param symbol The symbol of the the unit.
      */
-    event UnitCreate(IUnit indexed unit, IERC20 indexed anchor, bytes32 indexed hash, string symbol);
+    event UnitCreate(
+        IUnit indexed unit,
+        IERC20 indexed anchor,
+        bytes32 indexed hash,
+        string symbol
+    );
 
     /**
      * @notice Emit when a holder calls forge.
@@ -286,5 +300,11 @@ interface IUnit is IERC20Metadata {
      * @param dv     signed change to the holder’s balance of the reciprocal unit.
      * @param dw     signed change to the holder’s balance of 1.
      */
-    event Forge(address indexed holder, IUnit indexed unit, int256 du, int256 dv, int256 dw);
+    event Forge(
+        address indexed holder,
+        IUnit indexed unit,
+        int256 du,
+        int256 dv,
+        int256 dw
+    );
 }
