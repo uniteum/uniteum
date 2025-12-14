@@ -63,8 +63,8 @@ contract Unit is CloneERC20, IUnit {
             (u, v, w) = invariant();
         } else {
             (W,) = product(V);
-            u = W.balanceOf(address(this));
-            v = W.balanceOf(address(V));
+            u = this.balanceOf(address(W));
+            v = V.balanceOf(address(W));
             w = invariant(u, v);
         }
     }
@@ -131,17 +131,13 @@ contract Unit is CloneERC20, IUnit {
         // forge-lint: disable-next-line(unsafe-typecast)
         if (du < 0) this.__transfer(msg.sender, address(W), uint256(-du));
         // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv < 0) {
-            Unit(address(V)).__transfer(msg.sender, address(W), uint256(-dv));
-        }
+        if (dv < 0) Unit(address(V)).__transfer(msg.sender, address(W), uint256(-dv));
         // forge-lint: disable-next-line(unsafe-typecast)
         if (dw < 0) Unit(address(W)).__burn(msg.sender, uint256(-dw));
         // forge-lint: disable-next-line(unsafe-typecast)
         if (du > 0) this.__transfer(address(W), msg.sender, uint256(du));
         // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv > 0) {
-            Unit(address(V)).__transfer(address(W), msg.sender, uint256(dv));
-        }
+        if (dv > 0) Unit(address(V)).__transfer(address(W), msg.sender, uint256(dv));
         // forge-lint: disable-next-line(unsafe-typecast)
         if (dw > 0) Unit(address(W)).__mint(msg.sender, uint256(dw));
         emit Forge(msg.sender, this, du, dv, dw);
@@ -156,10 +152,6 @@ contract Unit is CloneERC20, IUnit {
      */
     function __transfer(address from, address to, uint256 units) public onlyUnit {
         _transfer(from, to, units);
-        // If this Unit wraps an external token, send the wrapped tokens to the holder.
-        if (address(anchor) != address(0)) {
-            anchor.safeTransferFrom(address(this), to, units);
-        }
     }
 
     /**
@@ -170,10 +162,6 @@ contract Unit is CloneERC20, IUnit {
      */
     function __burn(address holder, uint256 units) public onlyUnit {
         _burn(holder, units);
-        // If this Unit wraps an external token, send the wrapped tokens to the holder.
-        if (address(anchor) != address(0)) {
-            anchor.safeTransferFrom(address(this), holder, units);
-        }
     }
 
     /**
