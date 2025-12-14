@@ -19,11 +19,7 @@ contract MockMigratableToken is ERC20, IMigratable {
 
     constructor(string memory name, IERC20 upstream) ERC20(name, name) {
         UPSTREAM_TOKEN = upstream;
-        console.log(
-            "MockMigratableToken %s created at %s",
-            name,
-            address(this)
-        );
+        console.log("MockMigratableToken %s created at %s", name, address(this));
     }
 
     /// @inheritdoc IMigratable

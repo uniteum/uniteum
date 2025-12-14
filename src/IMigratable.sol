@@ -32,11 +32,7 @@ interface IMigratable {
      * @param downstream The downstream token address (destination).
      * @param amount The number of tokens migrated.
      */
-    event Migrated(
-        address indexed upstream,
-        address indexed downstream,
-        uint256 amount
-    );
+    event Migrated(address indexed upstream, address indexed downstream, uint256 amount);
 
     /**
      * @notice Emitted when tokens are reverse migrated from downstream to upstream.
@@ -44,9 +40,5 @@ interface IMigratable {
      * @param downstream The downstream token address (source).
      * @param amount The number of tokens reverse migrated.
      */
-    event Unmigrated(
-        address indexed upstream,
-        address indexed downstream,
-        uint256 amount
-    );
+    event Unmigrated(address indexed upstream, address indexed downstream, uint256 amount);
 }

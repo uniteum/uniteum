@@ -102,12 +102,7 @@ contract MigratingKiosk is IKiosk, Prototype, ReentrancyGuardTransient {
      * @inheritdoc IKiosk
      * @dev Buys from source kiosk, migrates to destination, and sends to caller.
      */
-    function buy()
-        public
-        payable
-        nonReentrant
-        returns (uint256 q, bool soldOut)
-    {
+    function buy() public payable nonReentrant returns (uint256 q, bool soldOut) {
         // Buy source tokens from the source kiosk
         (q, soldOut) = sourceKiosk.buy{value: msg.value}();
 
@@ -153,36 +148,22 @@ contract MigratingKiosk is IKiosk, Prototype, ReentrancyGuardTransient {
      * @param destinationToken_ The migratable token to receive after migration.
      * @return kiosk The newly created MigratingKiosk instance.
      */
-    function create(
-        IKiosk sourceKiosk_,
-        IMigratable destinationToken_
-    ) external returns (MigratingKiosk kiosk) {
-        bytes memory initData = abi.encode(
-            msg.sender,
-            sourceKiosk_,
-            destinationToken_
-        );
-        (address kioskAddress, ) = __clone(initData);
+    function create(IKiosk sourceKiosk_, IMigratable destinationToken_) external returns (MigratingKiosk kiosk) {
+        bytes memory initData = abi.encode(msg.sender, sourceKiosk_, destinationToken_);
+        (address kioskAddress,) = __clone(initData);
         kiosk = MigratingKiosk(payable(kioskAddress));
     }
 
     /// @inheritdoc Prototype
     function __initialize(bytes memory initData) public override onlyPrototype {
-        (
-            address creator,
-            IKiosk sourceKiosk_,
-            IMigratable destinationToken_
-        ) = abi.decode(initData, (address, IKiosk, IMigratable));
+        (address creator, IKiosk sourceKiosk_, IMigratable destinationToken_) =
+            abi.decode(initData, (address, IKiosk, IMigratable));
 
         owner = creator;
         sourceKiosk = sourceKiosk_;
         destinationToken = destinationToken_;
 
-        emit KioskCreated(
-            creator,
-            IERC20(address(destinationToken_)),
-            sourceKiosk_.listPrice()
-        );
+        emit KioskCreated(creator, IERC20(address(destinationToken_)), sourceKiosk_.listPrice());
     }
 
     /**
