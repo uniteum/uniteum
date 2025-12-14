@@ -131,13 +131,17 @@ contract Unit is CloneERC20, IUnit {
         // forge-lint: disable-next-line(unsafe-typecast)
         if (du < 0) this.__transfer(msg.sender, address(W), uint256(-du));
         // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv < 0) Unit(address(V)).__transfer(msg.sender, address(W), uint256(-dv));
+        if (dv < 0) {
+            Unit(address(V)).__transfer(msg.sender, address(W), uint256(-dv));
+        }
         // forge-lint: disable-next-line(unsafe-typecast)
         if (dw < 0) Unit(address(W)).__burn(msg.sender, uint256(-dw));
         // forge-lint: disable-next-line(unsafe-typecast)
         if (du > 0) this.__transfer(address(W), msg.sender, uint256(du));
         // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv > 0) Unit(address(V)).__transfer(address(W), msg.sender, uint256(dv));
+        if (dv > 0) {
+            Unit(address(V)).__transfer(address(W), msg.sender, uint256(dv));
+        }
         // forge-lint: disable-next-line(unsafe-typecast)
         if (dw > 0) Unit(address(W)).__mint(msg.sender, uint256(dw));
         emit Forge(msg.sender, this, du, dv, dw);
