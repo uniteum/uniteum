@@ -79,7 +79,11 @@ contract Unit is CloneERC20, IUnit {
         uint256 w1 = invariant(u1, v1);
 
         // forge-lint: disable-next-line(unsafe-typecast)
-        dw = 2 * (int256(w0) - int256(w1));
+        dw = int256(w0) - int256(w1);
+        // Double dw if no anchor tokens are involved to keep the invariant balanced.
+        if (address(anchor) == address(0) && address(reciprocal.anchor()) == address(0)) {
+            dw *= 2;
+        }
     }
 
     /// @inheritdoc IUnit

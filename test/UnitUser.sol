@@ -35,6 +35,9 @@ contract UnitUser is User {
         console.log("dv:", dv);
         dw = U.forgeQuote(du, dv);
         console.log("dw:", dw);
+        if (address(U.anchor()) != address(0) && du > 0) {
+            U.anchor().approve(address(U), uint256(du));
+        }
         dw = U.forge(du, dv);
         logBalances();
         console.log("total 1:", ONE.totalSupply());
