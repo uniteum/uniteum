@@ -18,7 +18,7 @@ contract UnitUser is User {
 
     function migrate(uint256 value) public {
         console.log("%s migrate", name, value);
-        ONE.UPSTREAM_ONE().approve(address(ONE), value);
+        ONE.UPSTREAM().approve(address(ONE), value);
         ONE.migrate(value);
         logBalance(ONE);
     }

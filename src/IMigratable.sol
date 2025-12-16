@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.30;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 /**
  * @title IMigratable
  * @notice Interface for tokens that support migration from an upstream version.
@@ -9,6 +11,14 @@ pragma solidity ^0.8.30;
  *      an equivalent amount of this token in exchange.
  */
 interface IMigratable {
+    /**
+     * @notice Upstream 1 token this contract accepts for migration.
+     * @dev Circulating supply is conserved across all migrations.
+     * @dev The most upstream 1 will not be an IUnit.
+     * @return upstream token this contract accepts for migration.
+     */
+    function UPSTREAM() external view returns (IERC20 upstream);
+
     /**
      * @notice Migrate upstream tokens to this token.
      * @dev The caller must approve this contract to transfer the upstream tokens.

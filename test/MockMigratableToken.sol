@@ -15,22 +15,22 @@ import {console} from "forge-std/Test.sol";
 contract MockMigratableToken is ERC20, IMigratable {
     using SafeERC20 for IERC20;
 
-    IERC20 public immutable UPSTREAM_TOKEN;
+    IERC20 public immutable UPSTREAM;
 
     constructor(string memory name, IERC20 upstream) ERC20(name, name) {
-        UPSTREAM_TOKEN = upstream;
+        UPSTREAM = upstream;
         console.log("MockMigratableToken %s created at %s", name, address(this));
     }
 
     /// @inheritdoc IMigratable
     function migrate(uint256 amount) external {
         // Transfer upstream tokens from caller to this contract
-        UPSTREAM_TOKEN.safeTransferFrom(msg.sender, address(this), amount);
+        UPSTREAM.safeTransferFrom(msg.sender, address(this), amount);
 
         // Mint equivalent amount of this token to caller
         _mint(msg.sender, amount);
 
-        emit Migrated(address(UPSTREAM_TOKEN), address(this), amount);
+        emit Migrated(address(UPSTREAM), address(this), amount);
     }
 
     /// @inheritdoc IMigratable
@@ -39,8 +39,8 @@ contract MockMigratableToken is ERC20, IMigratable {
         _burn(msg.sender, amount);
 
         // Transfer equivalent upstream tokens back to caller
-        UPSTREAM_TOKEN.safeTransfer(msg.sender, amount);
+        UPSTREAM.safeTransfer(msg.sender, amount);
 
-        emit Unmigrated(address(UPSTREAM_TOKEN), address(this), amount);
+        emit Unmigrated(address(UPSTREAM), address(this), amount);
     }
 }

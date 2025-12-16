@@ -226,14 +226,6 @@ interface IUnit is IERC20Metadata, IMigratable {
     function anchor() external view returns (IERC20);
 
     /**
-     * @notice Upstream 1 token this contract accepts for migration.
-     * @dev Circulating supply is conserved across all migrations.
-     * @dev The most upstream 1 will not be an IUnit.
-     * @return upstream token this contract accepts for migration.
-     */
-    function UPSTREAM_ONE() external view returns (IERC20 upstream);
-
-    /**
      * @dev Revert when called with duplicate units.
      */
     error DuplicateUnits();
