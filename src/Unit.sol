@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.30;
 
-import {IUnit, IERC20} from "./IUnit.sol";
+import {IUnit, IMigratable, IERC20} from "./IUnit.sol";
 import {CloneERC20, Prototype} from "./CloneERC20.sol";
 import {Units, Term} from "./Units.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -350,11 +350,13 @@ contract Unit is CloneERC20, IUnit {
 
     IERC20 public immutable UPSTREAM_ONE;
 
+    /// @inheritdoc IMigratable
     function migrate(uint256 units) external onlyOne {
         UPSTREAM_ONE.safeTransferFrom(msg.sender, address(this), units);
         _mint(msg.sender, units);
     }
 
+    /// @inheritdoc IMigratable
     function unmigrate(uint256 units) external onlyOne {
         _burn(msg.sender, units);
         UPSTREAM_ONE.safeTransferFrom(address(this), msg.sender, units);
