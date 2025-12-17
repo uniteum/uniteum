@@ -16,6 +16,8 @@ import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/Reentrancy
 abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
     using SafeERC20 for IERC20;
 
+    // ============ State Variables ============
+
     /**
      * @notice The ERC-20 token sold by this kiosk.
      */
@@ -31,6 +33,16 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
      */
     address public owner;
 
+    // ============ Initialization ============
+
+    function __initialize(address creator, IERC20 goods_, uint256 listPrice_) internal {
+        owner = creator;
+        goods = goods_;
+        listPrice = listPrice_;
+    }
+
+    // ============ View Functions ============
+
     /**
      * @notice Return the native currency held by the kiosk.
      */
@@ -40,7 +52,7 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
 
     /**
      * @notice Returns the current goods inventory held by the kiosk.
-     * @dev This is simply the kiosk’s balance of the goods token.
+     * @dev This is simply the kiosk's balance of the goods token.
      */
     function inventory() public view returns (uint256) {
         return goods.balanceOf(address(this));
@@ -55,20 +67,7 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
      */
     function quote(uint256 v) public view virtual returns (uint256 q, bool soldOut);
 
-    /**
-     * @notice Reject unknown function calls or unexpected calldata.
-     */
-    fallback() external payable {
-        revert UnknownFunctionCalledOrHexDataSent();
-    }
-
-    /**
-     * @notice Buy goods from the kiosk by sending native tokens to the contract.
-     * NOTE: there are no refunds if the kiosk becomes depleted!
-     */
-    receive() external payable {
-        buy();
-    }
+    // ============ External Functions ============
 
     /**
      * @notice Buy goods from the kiosk by sending native tokens.
@@ -85,6 +84,23 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
         goods.safeTransfer(msg.sender, q);
         emit KioskBuy(msg.sender, msg.value, q);
     }
+
+    /**
+     * @notice Buy goods from the kiosk by sending native tokens to the contract.
+     * NOTE: there are no refunds if the kiosk becomes depleted!
+     */
+    receive() external payable {
+        buy();
+    }
+
+    /**
+     * @notice Reject unknown function calls or unexpected calldata.
+     */
+    fallback() external payable {
+        revert UnknownFunctionCalledOrHexDataSent();
+    }
+
+    // ============ Owner Functions ============
 
     /**
      * @notice Reclaim some inventory of goods currently held by the kiosk.
@@ -105,11 +121,7 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
         }
     }
 
-    function __initialize(address creator, IERC20 goods_, uint256 listPrice_) internal {
-        owner = creator;
-        goods = goods_;
-        listPrice = listPrice_;
-    }
+    // ============ Modifiers ============
 
     modifier onlyOwner() {
         _onlyOwner();
