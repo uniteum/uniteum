@@ -13,7 +13,7 @@ import {IUnit, IERC20} from "../src/IUnit.sol";
 ///
 /// @dev Environment variables:
 ///      ONE    - Address of the identity unit "1" (required)
-///      SYMBOL - Symbol of the unit to create (required, e.g., "meter", "kg*m/s^2", "$0xdAC17...")
+///      SYMBOL - Symbol of the unit to create (required, e.g., "meter", "kg*m/s^2", "$0xdAC17F958D2ee523a2206206994597C13D831ec7")
 ///
 /// @dev The script will:
 ///      1. Connect to the existing ONE contract

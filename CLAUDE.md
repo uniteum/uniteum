@@ -25,7 +25,7 @@
 - **Built-in Liquidity**: Every unit U has a reciprocal 1/U with a constant product invariant `sqrt(u * v) = w`
 - **Symbolic Algebra**: Units compose algebraically: `kg*m/s^2`, `USD*ETH`, `m^2/3`
 - **Rational Exponents**: Full support for rational number exponents (e.g., `x^2/3`, `kg^-1/2`)
-- **Anchored Units**: Custodial wrappers for external ERC-20 tokens (e.g., `$0xdAC17...` for USDT)
+- **Anchored Units**: Custodial wrappers for external ERC-20 tokens (e.g., `$0xdAC17F958D2ee523a2206206994597C13D831ec7` for USDT)
 - **Kiosk System**: Native currency ↔ ERC-20 trading with fixed or discount pricing
 
 ### Key Files
@@ -185,7 +185,7 @@ Prototype (factory base)
 Encoding examples:
 - `"kg"` → base symbol with exponent 1/1
 - `"m^2"` → base symbol with exponent 2/1
-- `"$0xdAC17..."` → anchored USDT with exponent 1/1
+- `"$0xdAC17F958D2ee523a2206206994597C13D831ec7"` → anchored USDT with exponent 1/1
 
 #### Rational (128-bit)
 

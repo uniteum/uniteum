@@ -7,7 +7,7 @@ Uniteum is an algebraic liquidity protocol on Ethereum where units are ERC-20 to
 - **Built-in Liquidity**: Every unit U has a reciprocal 1/U with constant product invariant `u * v = w^2`
 - **Symbolic Algebra**: Units compose algebraically: `kg*m/s^2`, `m^2\3`
 - **Rational Exponents**: Full support for rational exponents (e.g., `x^2\3`, `kg^-1\2`)
-- **Anchored Units**: Custodial wrappers for external ERC-20 tokens (e.g., `$0xdAC17...` for USDT)
+- **Anchored Units**: Custodial wrappers for external ERC-20 tokens (e.g., `$0xdAC17F958D2ee523a2206206994597C13D831ec7` for USDT)
 - **Kiosk System**: Native currency ↔ ERC-20 trading with fixed or discount pricing
 
 For comprehensive documentation, see [CLAUDE.md](CLAUDE.md).
