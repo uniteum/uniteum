@@ -147,10 +147,10 @@ library Rationals {
     }
 
     /**
-     * @notice Decodes a Ratio128 value into numerator and denominator
-     * @param a A Ratio128-encoded int value
-     * @return n Signed 128-bit numerator
-     * @return d Unsigned 128-bit denominator
+     * @notice Decodes a Rational8 value into numerator and denominator
+     * @param a A Rational8-encoded int value
+     * @return n Signed 8-bit numerator
+     * @return d Unsigned 8-bit denominator
      */
     function parts(Rational8 a) internal pure returns (int8 n, uint8 d) {
         int256 r = a.raw();
@@ -161,15 +161,22 @@ library Rationals {
     }
 
     /**
-     * @notice Encodes a numerator and denominator as a Ratio128 int value
-     * @param n Signed 128-bit numerator
-     * @param d Unsigned 128-bit denominator (must be nonzero)
-     * @return a Ratio128 value
+     * @notice Encodes a numerator and denominator as a Rational8 int value
+     * @param n Signed 8-bit numerator
+     * @param d Unsigned 8-bit denominator (must be nonzero)
+     * @return a Rational8 value
      */
     function divRational8(int256 n, uint256 d) internal pure returns (Rational8 a) {
         if (d == 0) {
             revert ZeroDenominator();
         }
+
+        uint256 g = gcd(_abs(n), d);
+        // forge-lint: disable-next-line(unsafe-typecast)
+        n /= int8(uint8(g));
+        // forge-lint: disable-next-line(unsafe-typecast)
+        d /= uint8(g);
+
         if (n < -NUMERATOR8_MAX || n > NUMERATOR8_MAX) {
             revert ExponentTooBig();
         }
@@ -177,13 +184,15 @@ library Rationals {
             revert ExponentTooBig();
         }
         // forge-lint: disable-next-line(unsafe-typecast)
-        a = Rational8.wrap(int16(int256((uint256(n) << 8) | d)));
+        int256 encoded = (n << 8) | int256(uint256(d));
+        // forge-lint: disable-next-line(unsafe-typecast)
+        a = Rational8.wrap(int16(encoded));
     }
 
     /**
-     * @notice Negates a Ratio8-encoded value
-     * @param a A Ratio8-encoded int16 value
-     * @return Negated Ratio128-encoded value
+     * @notice Negates a Rational8-encoded value
+     * @param a A Rational8-encoded int16 value
+     * @return Negated Rational8-encoded value
      */
     function neg(Rational8 a) internal pure returns (Rational8) {
         (int8 n, uint8 d) = a.parts();
@@ -195,7 +204,7 @@ library Rationals {
     }
 
     /**
-     * @notice Converts a Ratio128 to an exact Rat16, reverts if not representable
+     * @notice Converts a Rational to an exact Rational8, reverts if not representable
      */
     function toRational8(Rational a) internal pure returns (Rational8 a8) {
         (int256 n, uint256 d) = a.parts();
@@ -203,7 +212,7 @@ library Rationals {
     }
 
     /**
-     * @notice Converts a Rat16 value to Ratio128
+     * @notice Converts a Rational8 value to Rational
      */
     function toRational(Rational8 a8) internal pure returns (Rational a) {
         (int256 n, uint256 d) = a8.parts();
@@ -244,6 +253,14 @@ library Rationals {
      * @notice Returns the absolute value of an int
      */
     function _abs(int256 x) internal pure returns (uint256) {
-        return uint256(x >= 0 ? x : -x);
+        if (x >= 0) {
+            // forge-lint: disable-next-line(unsafe-typecast)
+            return uint256(x);
+        } else {
+            unchecked {
+                // forge-lint: disable-next-line(unsafe-typecast)
+                return uint256(-x);
+            }
+        }
     }
 }
