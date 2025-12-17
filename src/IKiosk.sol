@@ -7,6 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /**
  * @title IKiosk
  * @notice Interface for kiosks that sell ERC-20 tokens in return for native currency.
+ * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 interface IKiosk {
     /**

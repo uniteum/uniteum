@@ -9,12 +9,12 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * @notice Interface for tokens that support migration from an upstream version.
  * @dev Tokens implementing this interface can accept upstream tokens and issue
  *      an equivalent amount of this token in exchange.
+ * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 interface IMigratable {
     /**
-     * @notice Upstream 1 token this contract accepts for migration.
+     * @notice Upstream token this contract accepts for migration.
      * @dev Circulating supply is conserved across all migrations.
-     * @dev The most upstream 1 will not be an IUnit.
      * @return upstream token this contract accepts for migration.
      */
     function UPSTREAM() external view returns (IERC20 upstream);
@@ -30,7 +30,7 @@ interface IMigratable {
 
     /**
      * @notice Reverse migrate this token to its upstream token.
-     * @dev The caller's tokens are burned/transferred to this contract,
+     * @dev The caller's tokens are transferred to this contract,
      *      and an equivalent amount of upstream tokens is transferred to the caller.
      * @param amount The number of tokens to reverse migrate.
      */
