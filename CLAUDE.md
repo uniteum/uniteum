@@ -388,6 +388,32 @@ uint256 public capacity;  // Inventory level at which price → 0
 
 ## Development Workflow
 
+### Code Style
+
+**NatSpec Documentation:**
+- Use `/** */` multi-line block notation for all NatSpec comments (never `///`)
+- Always use multi-line format even for single-line comments (this is what `forge fmt` enforces)
+- Include `@notice` for public descriptions
+- Add `@param` and `@return` for functions with parameters/returns
+- Keep comments concise and focused
+
+**Examples:**
+```solidity
+/**
+ * @notice ERC-20 token being sold.
+ */
+IERC20 public goods;
+
+/**
+ * @notice Buy goods with native tokens.
+ * @param amount Quantity to purchase.
+ * @return success True if purchase succeeded.
+ */
+function buy(uint256 amount) external returns (bool success);
+```
+
+**Important:** Always run `forge fmt` before committing to ensure consistent formatting.
+
 ### Environment Setup
 
 ```bash

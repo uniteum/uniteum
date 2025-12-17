@@ -9,8 +9,8 @@ import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/Reentrancy
 
 /**
  * @title Kiosk
- * @notice Base contract for selling ERC-20 tokens in return for native currency.
- * @dev The creator/owner can collect native tokens earned by the kiosk and reclaim inventory held by the kiosk.
+ * @notice Sell ERC-20 tokens for native currency with no refunds.
+ * @dev Owners can collect proceeds and reclaim unsold inventory.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
@@ -19,17 +19,17 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
     // ============ State Variables ============
 
     /**
-     * @notice The ERC-20 token sold by this kiosk.
+     * @notice ERC-20 token being sold.
      */
     IERC20 public goods;
 
     /**
-     * @notice Reference native-token price per unit of goods.
+     * @notice Reference price in native tokens per unit.
      */
     uint256 public listPrice;
 
     /**
-     * @notice The owner/creator of the Kiosk.
+     * @notice Kiosk creator and owner.
      */
     address public owner;
 
@@ -44,34 +44,33 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
     // ============ View Functions ============
 
     /**
-     * @notice Return the native currency held by the kiosk.
+     * @notice Native currency balance held by kiosk.
      */
     function balance() public view returns (uint256) {
         return address(this).balance;
     }
 
     /**
-     * @notice Returns the current goods inventory held by the kiosk.
-     * @dev This is simply the kiosk's balance of the goods token.
+     * @notice Available inventory of goods.
      */
     function inventory() public view returns (uint256) {
         return goods.balanceOf(address(this));
     }
 
     /**
-     * @notice Return the quantity of goods that can be bought for the given value.
-     * Note: the quantity of goods may vary if the quote does not happen within a transaction.
-     * @param v The value of native tokens sent to buy goods.
-     * @return q The quantity of goods that can be bought for the given value.
-     * @return soldOut True if the kiosk has no remaining goods to sell.
+     * @notice Calculate goods purchasable for given native token amount.
+     * @param v Native tokens to spend.
+     * @return q Quantity of goods buyer receives.
+     * @return soldOut True if inventory exhausted.
      */
     function quote(uint256 v) public view virtual returns (uint256 q, bool soldOut);
 
     // ============ External Functions ============
 
     /**
-     * @notice Buy goods from the kiosk by sending native tokens.
-     * NOTE: there are no refunds if the kiosk becomes depleted!
+     * @notice Buy goods with native tokens (no refunds if depleted).
+     * @return q Quantity of goods purchased.
+     * @return soldOut True if inventory exhausted.
      */
     function buy() public payable nonReentrant returns (uint256 q, bool soldOut) {
         (q, soldOut) = quote(msg.value);
@@ -86,15 +85,14 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
     }
 
     /**
-     * @notice Buy goods from the kiosk by sending native tokens to the contract.
-     * NOTE: there are no refunds if the kiosk becomes depleted!
+     * @notice Accept direct payments (calls buy).
      */
     receive() external payable {
         buy();
     }
 
     /**
-     * @notice Reject unknown function calls or unexpected calldata.
+     * @notice Reject unknown function calls.
      */
     fallback() external payable {
         revert UnknownFunctionCalledOrHexDataSent();
@@ -103,16 +101,16 @@ abstract contract Kiosk is IKiosk, Prototype, ReentrancyGuardTransient {
     // ============ Owner Functions ============
 
     /**
-     * @notice Reclaim some inventory of goods currently held by the kiosk.
-     * @param quantity of goods to reclaim.
+     * @notice Reclaim unsold inventory.
+     * @param quantity Amount of goods to reclaim.
      */
     function reclaim(uint256 quantity) external onlyOwner {
         goods.safeTransfer(msg.sender, quantity);
     }
 
     /**
-     * @notice Collect some native tokens currently held by the kiosk.
-     * @param value of goods to reclaim.
+     * @notice Collect sale proceeds.
+     * @param value Amount of native tokens to collect.
      */
     function collect(uint256 value) external onlyOwner {
         (bool ok,) = address(msg.sender).call{value: value}("");
