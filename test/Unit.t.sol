@@ -45,7 +45,7 @@ contract UnitTest is UnitBaseTest {
     }
 
     function testUnitUnary() public {
-        unaryTest("ETH*ETH", "ETH^2", "1/ETH^2");
+        unaryTest("foo*foo", "foo^2", "1/foo^2");
         unaryTest("1^127", "1", "1");
         unaryTest("a^127", "a^127", "1/a^127");
         unaryTest("a", "a", "1/a");
@@ -78,15 +78,15 @@ contract UnitTest is UnitBaseTest {
     }
 
     function testUnitBinary() public {
-        binaryTest("ETH", "ETH", "ETH^2", "1");
-        binaryTest("ETH", "MSFT", "ETH*MSFT", "ETH/MSFT");
-        binaryTest("ETH", "USD", "ETH*USD", "ETH/USD");
-        binaryTest("MSFT", "ETH", "ETH*MSFT", "MSFT/ETH");
-        binaryTest("MSFT", "MSFT", "MSFT^2", "1");
-        binaryTest("MSFT", "USD", "MSFT*USD", "MSFT/USD");
-        binaryTest("USD", "ETH", "ETH*USD", "USD/ETH");
-        binaryTest("USD", "MSFT", "MSFT*USD", "USD/MSFT");
-        binaryTest("USD", "USD", "USD^2", "1");
+        binaryTest("foo", "foo", "foo^2", "1");
+        binaryTest("foo", "bar", "bar*foo", "foo/bar");
+        binaryTest("foo", "baz", "baz*foo", "foo/baz");
+        binaryTest("bar", "foo", "bar*foo", "bar/foo");
+        binaryTest("bar", "bar", "bar^2", "1");
+        binaryTest("bar", "baz", "bar*baz", "bar/baz");
+        binaryTest("baz", "foo", "baz*foo", "baz/foo");
+        binaryTest("baz", "bar", "bar*baz", "baz/bar");
+        binaryTest("baz", "baz", "baz^2", "1");
     }
 
     function badProductUnitTest(string memory n, string memory d) public {
