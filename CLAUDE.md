@@ -23,8 +23,8 @@
 ### What Makes It Unique
 
 - **Built-in Liquidity**: Every unit U has a reciprocal 1/U with a constant product invariant `sqrt(u * v) = w`
-- **Symbolic Algebra**: Units compose algebraically: `kg*m/s^2`, `USD*ETH`, `m^2/3`
-- **Rational Exponents**: Full support for rational number exponents (e.g., `x^2/3`, `kg^-1/2`)
+- **Symbolic Algebra**: Units compose algebraically: `kg*m/s^2`, `USD*ETH`, `m^2\3`
+- **Rational Exponents**: Full support for rational number exponents (e.g., `x^2\3`, `kg^-1\2`)
 - **Anchored Units**: Custodial wrappers for external ERC-20 tokens (e.g., `$0xdAC17F958D2ee523a2206206994597C13D831ec7` for USDT)
 - **Kiosk System**: Native currency ↔ ERC-20 trading with fixed or discount pricing
 
@@ -109,7 +109,7 @@ Units compose using standard algebraic notation:
 unit("kg") * unit("m") / unit("s^2")  →  unit("kg*m/s^2")
 unit("ETH") * unit("USD")             →  unit("ETH*USD")
 unit("m^2")                           →  unit("m^2")
-unit("kg^2/3")                        →  unit("kg^2\\3")  // Note: \ is escape
+unit("kg^2\\3")                       →  unit("kg^2\\3")  // Note: \\ is escape for \
 ```
 
 **Normalization:**
@@ -513,7 +513,7 @@ function testSymbolNormalization() public {
     IUnit u = one.multiply("a*b/a");
     assertEq(u.symbol(), "b", "should simplify");
 
-    IUnit v = one.multiply("m^4\\2");  // m^(4/2)
+    IUnit v = one.multiply("m^4\\2");  // m^(4\2) = m^(4/2)
     assertEq(v.symbol(), "m^2", "should reduce exponent");
 }
 ```
@@ -685,8 +685,8 @@ IUnit force = one.multiply("kg*m/s^2");
 // Work with anchored tokens
 IUnit wrappedUSDT = one.multiply("$0xdAC17F958D2ee523a2206206994597C13D831ec7");
 
-// Rational exponents (use \\ for /)
-IUnit cubicRoot = one.multiply("m^1\\3");  // m^(1/3)
+// Rational exponents (use \\ in code for \)
+IUnit cubicRoot = one.multiply("m^1\\3");  // m^(1\3) = m^(1/3)
 ```
 
 ### Forge Operations
