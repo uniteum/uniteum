@@ -75,27 +75,6 @@ library Rationals {
     }
 
     /**
-     * @notice Computes least common multiple of two denominators
-     * @dev Uses identity lcm(a, b) = (a / gcd(a, b)) * b
-     */
-    function lcm(uint256 a, uint256 b) public pure returns (uint256) {
-        // forge-lint: disable-next-line(divide-before-multiply)
-        return (a / gcd(a, b)) * b;
-    }
-
-    /**
-     * @notice Computes greatest common divisor using Euclidean algorithm
-     */
-    function gcd(uint256 a, uint256 b) public pure returns (uint256) {
-        while (b != 0) {
-            uint256 t = b;
-            b = a % b;
-            a = t;
-        }
-        return a;
-    }
-
-    /**
      * @notice Negates a Ratio128-encoded value
      * @param a A Ratio128-encoded int value
      * @return Negated Ratio128-encoded value
@@ -159,13 +138,6 @@ library Rationals {
         r = n.divRational(uint256(d));
     }
 
-    /**
-     * @notice Returns the absolute value of an int
-     */
-    function _abs(int256 x) internal pure returns (uint256) {
-        return uint256(x >= 0 ? x : -x);
-    }
-
     function numerator(Rational8 a8) internal pure returns (int256 n) {
         n = int8(a8.raw() >> 8);
     }
@@ -209,6 +181,20 @@ library Rationals {
     }
 
     /**
+     * @notice Negates a Ratio8-encoded value
+     * @param a A Ratio8-encoded int16 value
+     * @return Negated Ratio128-encoded value
+     */
+    function neg(Rational8 a) internal pure returns (Rational8) {
+        (int8 n, uint8 d) = a.parts();
+        return divRational8(-n, d);
+    }
+
+    function add(Rational8 a, Rational8 b) internal pure returns (Rational8) {
+        return a.toRational().add(b.toRational()).toRational8();
+    }
+
+    /**
      * @notice Converts a Ratio128 to an exact Rat16, reverts if not representable
      */
     function toRational8(Rational a) internal pure returns (Rational8 a8) {
@@ -224,20 +210,6 @@ library Rationals {
         a = n.divRational(d);
     }
 
-    function add(Rational8 a, Rational8 b) internal pure returns (Rational8) {
-        return a.toRational().add(b.toRational()).toRational8();
-    }
-
-    /**
-     * @notice Negates a Ratio8-encoded value
-     * @param a A Ratio8-encoded int16 value
-     * @return Negated Ratio128-encoded value
-     */
-    function neg(Rational8 a) internal pure returns (Rational8) {
-        (int8 n, uint8 d) = a.parts();
-        return divRational8(-n, d);
-    }
-
     function toInt256(uint256 x) internal pure returns (int256 y) {
         if (x <= uint256(type(int256).max)) {
             // forge-lint: disable-next-line(unsafe-typecast)
@@ -245,5 +217,33 @@ library Rationals {
         } else {
             revert ExponentTooBig();
         }
+    }
+
+    /**
+     * @notice Computes greatest common divisor using Euclidean algorithm
+     */
+    function gcd(uint256 a, uint256 b) public pure returns (uint256) {
+        while (b != 0) {
+            uint256 t = b;
+            b = a % b;
+            a = t;
+        }
+        return a;
+    }
+
+    /**
+     * @notice Computes least common multiple of two denominators
+     * @dev Uses identity lcm(a, b) = (a / gcd(a, b)) * b
+     */
+    function lcm(uint256 a, uint256 b) public pure returns (uint256) {
+        // forge-lint: disable-next-line(divide-before-multiply)
+        return (a / gcd(a, b)) * b;
+    }
+
+    /**
+     * @notice Returns the absolute value of an int
+     */
+    function _abs(int256 x) internal pure returns (uint256) {
+        return uint256(x >= 0 ? x : -x);
     }
 }
