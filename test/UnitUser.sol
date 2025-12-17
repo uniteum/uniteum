@@ -36,6 +36,7 @@ contract UnitUser is User {
         dw = U.forgeQuote(du, dv);
         console.log("dw:", dw);
         if (address(U.anchor()) != address(0) && du > 0) {
+            // forge-lint: disable-next-line(unsafe-typecast)
             U.anchor().approve(address(U), uint256(du));
         }
         dw = U.forge(du, dv);

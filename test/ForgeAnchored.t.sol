@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.30;
 
-import {UnitBaseTest, Units, Unit, IUnit, console, Math} from "./UnitBase.t.sol";
-import {TestToken, IERC20Metadata} from "./TestToken.sol";
+import {UnitBaseTest, Units, IUnit} from "./UnitBase.t.sol";
+import {TestToken} from "./TestToken.sol";
 
 contract ForgeAnchoredTest is UnitBaseTest {
     using Units for *;

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.30;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {IUnit, IERC20} from "../src/IUnit.sol";
+import {IUnit} from "../src/IUnit.sol";
 
 /// @notice Deploy a specific unit using an existing "1" (ONE) contract.
 /// @dev Usage examples:

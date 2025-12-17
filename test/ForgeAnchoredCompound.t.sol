@@ -22,8 +22,8 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
 
     TestToken public wbtc;
     TestToken public weth;
-    IUnit public anchoredWBTC;
-    IUnit public anchoredWETH;
+    IUnit public awbtc;
+    IUnit public aweth;
     IUnit public compound;
 
     function setUp() public virtual override {
@@ -35,19 +35,19 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         weth = alex.newToken("WETH", 1e6);
 
         // Create anchored units
-        anchoredWBTC = l.anchored(wbtc);
-        anchoredWETH = l.anchored(weth);
+        awbtc = l.anchored(wbtc);
+        aweth = l.anchored(weth);
 
         // Add tokens to alex's tracking
-        alex.addToken(anchoredWBTC);
-        alex.addToken(anchoredWBTC.reciprocal());
-        alex.addToken(anchoredWETH);
-        alex.addToken(anchoredWETH.reciprocal());
+        alex.addToken(awbtc);
+        alex.addToken(awbtc.reciprocal());
+        alex.addToken(aweth);
+        alex.addToken(aweth.reciprocal());
 
-        console.log("anchoredWBTC:", address(anchoredWBTC));
-        console.log("anchoredWETH:", address(anchoredWETH));
-        console.log("WBTC backing token:", address(anchoredWBTC.anchor()));
-        console.log("WETH backing token:", address(anchoredWETH.anchor()));
+        console.log("awbtc:", address(awbtc));
+        console.log("aweth:", address(aweth));
+        console.log("WBTC backing token:", address(awbtc.anchor()));
+        console.log("WETH backing token:", address(aweth.anchor()));
     }
 
     /**
@@ -61,8 +61,8 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         owen.give(address(alex), initialOne, l);
 
         console.log("\n=== Step 1: Approve anchor tokens ===");
-        alex.approve(address(anchoredWBTC), 10, wbtc);
-        alex.approve(address(anchoredWETH), 20, weth);
+        alex.approve(address(awbtc), 10, wbtc);
+        alex.approve(address(aweth), 20, weth);
 
         console.log("\n=== Step 2: Create anchored units (wrapping) ===");
         console.log("Alex WBTC balance before:", wbtc.balanceOf(address(alex)));
@@ -70,18 +70,18 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
 
         // Mint some $WBTC and $WETH by depositing real tokens
         // For now, we'll forge with "1" since pure wrapping has its own issues
-        alex.forge(anchoredWBTC, 10, 10); // Creates $WBTC + 1/$WBTC pair
-        alex.forge(anchoredWETH, 20, 20); // Creates $WETH + 1/$WETH pair
+        alex.forge(awbtc, 10, 10); // Creates $WBTC + 1/$WBTC pair
+        alex.forge(aweth, 20, 20); // Creates $WETH + 1/$WETH pair
 
-        console.log("Alex $WBTC balance:", anchoredWBTC.balanceOf(address(alex)));
-        console.log("Alex $WETH balance:", anchoredWETH.balanceOf(address(alex)));
-        console.log("$WBTC contract WBTC balance:", wbtc.balanceOf(address(anchoredWBTC)));
-        console.log("$WETH contract WETH balance:", weth.balanceOf(address(anchoredWETH)));
+        console.log("Alex $WBTC balance:", awbtc.balanceOf(address(alex)));
+        console.log("Alex $WETH balance:", aweth.balanceOf(address(alex)));
+        console.log("$WBTC contract WBTC balance:", wbtc.balanceOf(address(awbtc)));
+        console.log("$WETH contract WETH balance:", weth.balanceOf(address(aweth)));
 
         console.log("\n=== Step 3: Create compound unit ($WBTC * $WETH) ===");
 
         // First, create the compound unit contract
-        compound = anchoredWBTC.multiply(anchoredWETH);
+        compound = awbtc.multiply(aweth);
         alex.addToken(compound);
         alex.addToken(compound.reciprocal());
 
@@ -89,37 +89,37 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         console.log("Compound unit symbol:", compound.symbol());
 
         // Approve compound contract to transfer the unit tokens
-        //alex.approve(address(compound), 100, anchoredWBTC);
-        //alex.approve(address(compound), 100, anchoredWETH);
+        //alex.approve(address(compound), 100, awbtc);
+        //alex.approve(address(compound), 100, aweth);
 
         // CRITICAL: The anchor unit contracts also need approval to transfer the real tokens!
         // This is because __transfer will try to move the real WBTC/WETH
-        //alex.approve(address(anchoredWBTC), 100, wbtc);
-        //alex.approve(address(anchoredWETH), 100, weth);
+        //alex.approve(address(awbtc), 100, wbtc);
+        //alex.approve(address(aweth), 100, weth);
 
         // Forge compound: deposit 5 $WBTC and 10 $WETH to get compound
-        alex.forge(anchoredWBTC, anchoredWETH, -5, -10);
+        alex.forge(awbtc, aweth, -5, -10);
 
         console.log("Compound unit created:", address(compound));
         console.log("Alex compound balance:", compound.balanceOf(address(alex)));
-        console.log("Alex $WBTC balance after compound:", anchoredWBTC.balanceOf(address(alex)));
-        console.log("Alex $WETH balance after compound:", anchoredWETH.balanceOf(address(alex)));
+        console.log("Alex $WBTC balance after compound:", awbtc.balanceOf(address(alex)));
+        console.log("Alex $WETH balance after compound:", aweth.balanceOf(address(alex)));
 
         // Check where the anchor tokens are now
         console.log("\n=== Checking anchor token locations ===");
-        console.log("$WBTC contract WBTC balance:", wbtc.balanceOf(address(anchoredWBTC)));
-        console.log("$WETH contract WETH balance:", weth.balanceOf(address(anchoredWETH)));
+        console.log("$WBTC contract WBTC balance:", wbtc.balanceOf(address(awbtc)));
+        console.log("$WETH contract WETH balance:", weth.balanceOf(address(aweth)));
         console.log("Compound contract WBTC balance:", wbtc.balanceOf(address(compound)));
         console.log("Compound contract WETH balance:", weth.balanceOf(address(compound)));
-        console.log("Compound contract $WBTC balance:", anchoredWBTC.balanceOf(address(compound)));
-        console.log("Compound contract $WETH balance:", anchoredWETH.balanceOf(address(compound)));
+        console.log("Compound contract $WBTC balance:", awbtc.balanceOf(address(compound)));
+        console.log("Compound contract $WETH balance:", aweth.balanceOf(address(compound)));
         console.log("\n=== Step 4: Unwind compound back to constituents ===");
         console.log("This should FAIL because anchor tokens are in compound contract,");
         console.log("but __transfer tries to send them from base unit contracts.");
 
         // Try to unwind: extract 2 $WBTC and 4 $WETH from compound
         // This should revert with "ERC20: transfer amount exceeds balance" or similar
-        alex.forge(anchoredWBTC, anchoredWETH, 2, 4);
+        alex.forge(awbtc, aweth, 2, 4);
     }
 
     /**
@@ -132,26 +132,26 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         owen.give(address(alex), initialOne, l);
 
         // Create anchored units
-        alex.approve(address(anchoredWBTC), 100, wbtc);
-        alex.forge(anchoredWBTC, 10, 10);
+        alex.approve(address(awbtc), 100, wbtc);
+        alex.forge(awbtc, 10, 10);
 
-        console.log("Initial $WBTC balance:", anchoredWBTC.balanceOf(address(alex)));
-        console.log("Initial WBTC backing:", wbtc.balanceOf(address(anchoredWBTC)));
+        console.log("Initial $WBTC balance:", awbtc.balanceOf(address(alex)));
+        console.log("Initial WBTC backing:", wbtc.balanceOf(address(awbtc)));
 
         // Create compound using 5 $WBTC
-        alex.approve(address(anchoredWETH), 100, weth);
-        alex.forge(anchoredWETH, 10, 10);
+        alex.approve(address(aweth), 100, weth);
+        alex.forge(aweth, 10, 10);
 
         // Create the compound unit contract
-        compound = anchoredWBTC.multiply(anchoredWETH);
+        compound = awbtc.multiply(aweth);
         alex.addToken(compound);
 
         // Forge the compound
-        alex.forge(anchoredWBTC, anchoredWETH, -5, -5);
+        alex.forge(awbtc, aweth, -5, -5);
 
         console.log("\nAfter compound creation:");
-        console.log("Alex $WBTC balance:", anchoredWBTC.balanceOf(address(alex)));
-        console.log("WBTC in $WBTC contract:", wbtc.balanceOf(address(anchoredWBTC)));
+        console.log("Alex $WBTC balance:", awbtc.balanceOf(address(alex)));
+        console.log("WBTC in $WBTC contract:", wbtc.balanceOf(address(awbtc)));
         console.log("WBTC in compound contract:", wbtc.balanceOf(address(compound)));
 
         // Now alex tries to burn his remaining 5 $WBTC to get WBTC back
@@ -161,7 +161,7 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         console.log("This may fail if not enough WBTC backing in base contract.");
 
         // Burn $WBTC (this works if we only burn what's left in the base contract)
-        alex.forge(anchoredWBTC, -5, 0);
+        alex.forge(awbtc, -5, 0);
 
         console.log("\nAfter redemption:");
         console.log("WBTC returned to Alex:", wbtc.balanceOf(address(alex)));
