@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.30;
 
-import "forge-std/Script.sol";
-import "../src/Uniteum.sol";
+import {Script, console2} from "forge-std/Script.sol";
+import {Uniteum} from "../src/Uniteum.sol";
 
 /// @notice Deploy the Uniteum 0.0 1 contract.
 /// @dev Usage: forge script script/Uniteum.s.sol -f $chain --private-key $tx_key
