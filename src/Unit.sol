@@ -354,12 +354,14 @@ contract Unit is CloneERC20, IUnit {
     function migrate(uint256 units) external onlyOne {
         UPSTREAM.safeTransferFrom(msg.sender, address(this), units);
         _mint(msg.sender, units);
+        emit Migrate(msg.sender, units);
     }
 
     /// @inheritdoc IMigratable
     function unmigrate(uint256 units) external onlyOne {
         _burn(msg.sender, units);
         UPSTREAM.safeTransferFrom(address(this), msg.sender, units);
+        emit Unmigrate(msg.sender, units);
     }
 
     constructor(IERC20 upstream) CloneERC20(ONE_SYMBOL, ONE_SYMBOL) {

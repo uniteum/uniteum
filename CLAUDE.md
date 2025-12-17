@@ -290,9 +290,6 @@ The forge operation may burn "1" tokens but never mints beyond initial supply.
 // Create new unit by multiplying symbol
 function multiply(string memory symbol_) external returns (IUnit U)
 
-// Create new unit by dividing symbol
-function divide(string memory symbol_) external returns (IUnit U)
-
 // Get product of this unit with another
 function product(IUnit V) external view returns (IUnit W, bool reverse)
 
