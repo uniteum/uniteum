@@ -32,9 +32,11 @@ library Units {
     /// @dev Bitmap indicating valid symbol characters: 0-9, A-Z, a-z, _, -, .
     uint256 constant SYMBOL_CHAR_BITS = 0x7fffffe87fffffe03ff600000000000;
     /// @dev The term for 1^0. The ascii code for "1" is 0x31.
+    /// @dev Shift amount for term type byte: 248 bits (31 bytes) = 0xf8
     uint256 constant ONE_TERM = 0x31 << 0xf8;
     /// @dev A term with this type is an encoded address reference with an exponent.
     uint256 constant ANCHOR_TERM_TYPE = 1;
+    /// @dev Shift amount for anchor address: 20 bytes (address) + 9 bytes (reserved) = 88 bits = 0x58
     uint256 constant ANCHOR_SHIFT = 0x58;
     string constant ONE_SYMBOL = "1";
     bytes1 constant ANCHOR_PREFIX = "$";
@@ -53,6 +55,7 @@ library Units {
     error InvalidAddressTerm(Term term);
     error BadHexCharacter(uint8 char);
     error UnexpectedCharacter(bytes1 char);
+    error UnexpectedEndOfInput();
 
     /// @dev Extracts the base part from a term (clears the exponent byte)
     function base(Term term) internal pure returns (Term base_) {
@@ -68,7 +71,7 @@ library Units {
         return Rational8.wrap(int16(uint16(term.raw())));
     }
 
-    /// @dev Returns whether the char is on of 0-9, A-Z, a-z, _, -
+    /// @dev Returns whether the char is one of 0-9, A-Z, a-z, _, -, .
     function isSymbolChar(bytes1 char) internal pure returns (bool) {
         return (SYMBOL_CHAR_BITS >> uint8(char)) & 1 != 0;
     }
@@ -152,15 +155,17 @@ library Units {
             }
         } else {
             uint256 i;
-            for (; i < 30; i++) {
-                if (!s[i].isSymbolChar()) {
-                    break;
+            unchecked {
+                for (; i < 30; ++i) {
+                    if (!s[i].isSymbolChar()) {
+                        break;
+                    }
                 }
-            }
 
-            for (; i < 30; i++) {
-                if (s[i] != 0) {
-                    revert UnexpectedCharacter(s[i]);
+                for (; i < 30; ++i) {
+                    if (s[i] != 0) {
+                        revert UnexpectedCharacter(s[i]);
+                    }
                 }
             }
         }
@@ -168,8 +173,10 @@ library Units {
 
     /// @dev Revert if any term is invalid.
     function mustBeValidTerms(Term[] memory terms) internal pure {
-        for (uint256 i = 0; i < terms.length; i++) {
-            terms[i].mustBeValidTerm();
+        unchecked {
+            for (uint256 i = 0; i < terms.length; ++i) {
+                terms[i].mustBeValidTerm();
+            }
         }
     }
 
@@ -191,8 +198,10 @@ library Units {
     /// @dev Return the reciprocal terms. Modifies the input.
     function reciprocal(Term[] memory terms) internal pure returns (Term[] memory reciprocal_) {
         reciprocal_ = terms;
-        for (uint256 i = 0; i < terms.length; i++) {
-            reciprocal_[i] = terms[i].reciprocal();
+        unchecked {
+            for (uint256 i = 0; i < terms.length; ++i) {
+                reciprocal_[i] = terms[i].reciprocal();
+            }
         }
     }
 
@@ -203,17 +212,21 @@ library Units {
 
     function toString(bytes30 b) internal pure returns (string memory s) {
         uint256 end;
-        // Find trailing zeros
-        for (; end < 30; end++) {
-            if (b[end] == 0) {
-                break;
+        unchecked {
+            // Find trailing zeros
+            for (; end < 30; ++end) {
+                if (b[end] == 0) {
+                    break;
+                }
             }
         }
 
         bytes memory sb = new bytes(end);
 
-        for (uint256 i = 0; i < end; i++) {
-            sb[i] = b[i];
+        unchecked {
+            for (uint256 i = 0; i < end; ++i) {
+                sb[i] = b[i];
+            }
         }
         s = string(sb);
     }
@@ -244,11 +257,13 @@ library Units {
         }
 
         string memory mul; // Do not put * before the first term
-        for (uint256 i = 0; i < terms.length; i++) {
-            int256 n = terms[i].exponent().numerator();
-            if (n > 0) {
-                symbol_ = symbol_.add(mul, terms[i].symbol());
-                mul = "*";
+        unchecked {
+            for (uint256 i = 0; i < terms.length; ++i) {
+                int256 n = terms[i].exponent().numerator();
+                if (n > 0) {
+                    symbol_ = symbol_.add(mul, terms[i].symbol());
+                    mul = "*";
+                }
             }
         }
 
@@ -256,10 +271,12 @@ library Units {
             symbol_ = ONE_SYMBOL;
         }
 
-        for (uint256 i = 0; i < terms.length; i++) {
-            int256 n = terms[i].exponent().numerator();
-            if (n < 0) {
-                symbol_ = symbol_.add("/", terms[i].reciprocal().symbol());
+        unchecked {
+            for (uint256 i = 0; i < terms.length; ++i) {
+                int256 n = terms[i].exponent().numerator();
+                if (n < 0) {
+                    symbol_ = symbol_.add("/", terms[i].reciprocal().symbol());
+                }
             }
         }
     }
@@ -277,19 +294,21 @@ library Units {
         }
         start += 2;
         uint160 result = 0;
-        for (uint256 i = start; i < cursor; i++) {
-            uint8 c = uint8(buffer[i]);
-            if (c >= 48 && c <= 57) {
-                // '0'-'9'
-                result = result * 16 + (c - 48);
-            } else if (c >= 65 && c <= 70) {
-                // 'A'-'F'
-                result = result * 16 + (c - 55);
-            } else if (c >= 97 && c <= 102) {
-                // 'a'-'f'
-                result = result * 16 + (c - 87);
-            } else {
-                revert BadHexCharacter(c);
+        unchecked {
+            for (uint256 i = start; i < cursor; ++i) {
+                uint8 c = uint8(buffer[i]);
+                if (c >= 48 && c <= 57) {
+                    // '0'-'9'
+                    result = result * 16 + (c - 48);
+                } else if (c >= 65 && c <= 70) {
+                    // 'A'-'F'
+                    result = result * 16 + (c - 55);
+                } else if (c >= 97 && c <= 102) {
+                    // 'a'-'f'
+                    result = result * 16 + (c - 87);
+                } else {
+                    revert BadHexCharacter(c);
+                }
             }
         }
         term = address(result).withExponent(ONE_RATIONAL_8);
@@ -311,6 +330,8 @@ library Units {
             revert BaseSymbolTooBig();
         }
 
+        // SAFETY: Reading from memory buffer at validated offset (start < cursor < end)
+        // and masking to exact baseLength bytes. No out-of-bounds access possible.
         assembly {
             let word := mload(add(add(buffer, 32), start))
             let shift := sub(256, mul(baseLength, 8))
@@ -323,16 +344,18 @@ library Units {
     function parseNumber(bytes memory buffer, uint256 start) internal pure returns (uint256 n, uint256 cursor) {
         uint256 end = buffer.length;
         cursor = start;
-        while (cursor < end && n <= 128 && buffer[cursor] >= "0" && buffer[cursor] <= "9") {
-            n = n * 10 + uint8(buffer[cursor]) - 48;
-            cursor++;
+        unchecked {
+            while (cursor < end && n <= 128 && buffer[cursor] >= "0" && buffer[cursor] <= "9") {
+                n = n * 10 + uint8(buffer[cursor]) - 48;
+                ++cursor;
+            }
         }
     }
 
     /// @dev Reverts if cursor is not less than end
     function mustBeLessThan(uint256 cursor, uint256 end) internal pure {
         if (cursor >= end) {
-            revert UnexpectedCharacter(bytes1(0));
+            revert UnexpectedEndOfInput();
         }
     }
 
@@ -346,8 +369,10 @@ library Units {
 
         // Count number of terms
         uint256 termCount = 1;
-        for (uint256 j = 1; j < end; j++) {
-            if (buffer[j] == DIVIDE_SYMBOL || buffer[j] == MULTIPLY_SYMBOL) termCount++;
+        unchecked {
+            for (uint256 j = 1; j < end; ++j) {
+                if (buffer[j] == DIVIDE_SYMBOL || buffer[j] == MULTIPLY_SYMBOL) termCount++;
+            }
         }
 
         terms = new Term[](termCount);
@@ -419,8 +444,10 @@ library Units {
             short = long;
         } else {
             short = new Term[](n);
-            for (uint256 i = 0; i < n; i++) {
-                short[i] = long[i];
+            unchecked {
+                for (uint256 i = 0; i < n; ++i) {
+                    short[i] = long[i];
+                }
             }
         }
     }
@@ -478,8 +505,10 @@ library Units {
         uint256 n = terms.length;
         if (n == 0) return true;
 
-        for (uint256 i = 0; i < n - 1; i++) {
-            if (terms[i].raw() > terms[i + 1].raw()) return false;
+        unchecked {
+            for (uint256 i = 0; i < n - 1; ++i) {
+                if (terms[i].raw() > terms[i + 1].raw()) return false;
+            }
         }
         return true;
     }
@@ -524,26 +553,47 @@ library Units {
 
     /// @dev Sorts and merges duplicate bases
     function sortAndMerge(Term[] memory terms) internal pure returns (Term[] memory) {
+        if (terms.length == 0) return terms;
+
         terms = terms.sort();
+
+        // Quick check if merge is needed or if "1" terms need filtering
+        bool needsProcessing = false;
+        unchecked {
+            for (uint256 i = 0; i < terms.length; ++i) {
+                if (terms[i].base().raw() == ONE_TERM) {
+                    needsProcessing = true;
+                    break;
+                }
+                if (i > 0 && terms[i].base().raw() == terms[i - 1].base().raw()) {
+                    needsProcessing = true;
+                    break;
+                }
+            }
+        }
+        if (!needsProcessing) return terms;
+
         uint256 termCount = terms.length;
         uint256 j;
         Term term = terms[0].base();
         Rational exp = terms[0].exponent().toRational();
-        for (uint256 i = 1; i < termCount; i++) {
-            if (terms[i].base().raw() == term.raw()) {
-                exp = exp.add(terms[i].exponent().toRational());
-            } else {
-                if (exp.raw() != ZERO_RATIONAL_8.raw() && term.raw() != ONE_TERM) {
-                    terms[j] = term.withExponent(exp.toRational8());
-                    j++;
+        unchecked {
+            for (uint256 i = 1; i < termCount; ++i) {
+                if (terms[i].base().raw() == term.raw()) {
+                    exp = exp.add(terms[i].exponent().toRational());
+                } else {
+                    if (exp.raw() != ZERO_RATIONAL_8.raw() && term.raw() != ONE_TERM) {
+                        terms[j] = term.withExponent(exp.toRational8());
+                        ++j;
+                    }
+                    term = terms[i].base();
+                    exp = terms[i].exponent().toRational();
                 }
-                term = terms[i].base();
-                exp = terms[i].exponent().toRational();
             }
-        }
-        if (exp.raw() != ZERO_RATIONAL_8.raw() && term.raw() != ONE_TERM) {
-            terms[j] = term.withExponent(exp.toRational8());
-            j++;
+            if (exp.raw() != ZERO_RATIONAL_8.raw() && term.raw() != ONE_TERM) {
+                terms[j] = term.withExponent(exp.toRational8());
+                ++j;
+            }
         }
 
         terms = terms.take(j);
