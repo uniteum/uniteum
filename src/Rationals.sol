@@ -4,6 +4,13 @@ pragma solidity ^0.8.30;
 import {Rational, Rational8} from "./Rational.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
+/**
+ * @title Rationals
+ * @notice Library for rational number arithmetic with 128-bit and 8-bit representations
+ * @dev Rational: int256 with high 128 bits = numerator, low 128 bits = denominator
+ *      Rational8: int16 with high 8 bits = numerator, low 8 bits = denominator
+ *      All rationals are stored in reduced form (lowest terms)
+ */
 library Rationals {
     int128 constant NUMERATOR_MAX = type(int128).max;
     uint128 constant DENOMINATOR_MAX = type(uint128).max;
@@ -13,21 +20,33 @@ library Rationals {
     using Rationals for *;
     using Strings for *;
 
-    /// @dev Reverts when a denominator is zero
+    /**
+     * @dev Reverts when a denominator is zero
+     */
     error ZeroDenominator();
 
-    /// @dev Reverts when a value cannot safely downcast to a smaller type
+    /**
+     * @dev Reverts when a value cannot safely downcast to a smaller type
+     */
     error ExponentTooBig();
     error DenominatorTooBig();
     error NumeratorTooBig();
 
-    /// @dev Reverts when exact Rat16 encoding is impossible
+    /**
+     * @dev Reverts when exact Rat16 encoding is impossible
+     */
     error Rat16EncodingImpossible();
 
+    /**
+     * @notice Unwraps a Rational to its underlying int256 representation
+     */
     function raw(Rational n) internal pure returns (int256) {
         return Rational.unwrap(n);
     }
 
+    /**
+     * @notice Unwraps a Rational8 to its underlying int16 representation
+     */
     function raw(Rational8 n) internal pure returns (int256) {
         return Rational8.unwrap(n);
     }
@@ -46,10 +65,10 @@ library Rationals {
     }
 
     /**
-     * @notice Encodes a numerator and denominator as a Ratio128 int value
+     * @notice Encodes a numerator and denominator as a Rational, reduced to lowest terms
      * @param n Signed 128-bit numerator
      * @param d Unsigned 128-bit denominator (must be nonzero)
-     * @return a Encoded Ratio128 value
+     * @return a Encoded Rational value in reduced form
      */
     function divRational(int256 n, uint256 d) internal pure returns (Rational a) {
         if (d == 0) {
@@ -85,7 +104,8 @@ library Rationals {
     }
 
     /**
-     * @notice Adds two Ratio128 values and returns normalized result
+     * @notice Adds two Rational values and returns normalized result
+     * @dev Computes a/b + c/d by finding common denominator using LCM
      */
     function add(Rational a, Rational b) internal pure returns (Rational) {
         (int256 an, uint256 ad) = a.parts();
@@ -100,15 +120,16 @@ library Rationals {
     }
 
     /**
-     * @notice Subtracts two Ratio128 values and returns normalized result
+     * @notice Subtracts two Rational values and returns normalized result
+     * @dev Computes a - b as a + (-b)
      */
     function sub(Rational a, Rational b) internal pure returns (Rational) {
         return a.add(b.neg());
     }
 
     /**
-     * @notice Multiplies two Ratio128 values and returns normalized result
-     * a/b * c/d = a/d * c/b
+     * @notice Multiplies two Rational values and returns normalized result
+     * @dev Computes (a/b) * (c/d) = (a*c)/(b*d), then reduces using GCD
      */
     function mul(Rational a, Rational b) internal pure returns (Rational) {
         (int256 an, uint256 ad) = a.parts();
@@ -120,7 +141,8 @@ library Rationals {
     }
 
     /**
-     * @notice Divides Ratio128 a by Ratio128 b and returns normalized result
+     * @notice Divides Rational a by Rational b and returns normalized result
+     * @dev Computes (a/b) / (c/d) = (a*d)/(b*c), handling sign normalization
      */
     function div(Rational a, Rational b) internal pure returns (Rational r) {
         (int256 an, uint256 ad) = a.parts();
@@ -138,10 +160,16 @@ library Rationals {
         r = n.divRational(uint256(d));
     }
 
+    /**
+     * @notice Extracts the numerator from a Rational8 value
+     */
     function numerator(Rational8 a8) internal pure returns (int256 n) {
         n = int8(a8.raw() >> 8);
     }
 
+    /**
+     * @notice Extracts the denominator from a Rational8 value
+     */
     function denominator(Rational8 a8) internal pure returns (uint256 d) {
         d = uint8(uint256(a8.raw()));
     }
@@ -161,10 +189,10 @@ library Rationals {
     }
 
     /**
-     * @notice Encodes a numerator and denominator as a Rational8 int value
+     * @notice Encodes a numerator and denominator as a Rational8, reduced to lowest terms
      * @param n Signed 8-bit numerator
      * @param d Unsigned 8-bit denominator (must be nonzero)
-     * @return a Rational8 value
+     * @return a Rational8 value in reduced form
      */
     function divRational8(int256 n, uint256 d) internal pure returns (Rational8 a) {
         if (d == 0) {
@@ -199,6 +227,9 @@ library Rationals {
         return divRational8(-n, d);
     }
 
+    /**
+     * @notice Adds two Rational8 values by converting to Rational, adding, then converting back
+     */
     function add(Rational8 a, Rational8 b) internal pure returns (Rational8) {
         return a.toRational().add(b.toRational()).toRational8();
     }
@@ -219,6 +250,9 @@ library Rationals {
         a = n.divRational(d);
     }
 
+    /**
+     * @notice Safely converts uint256 to int256, reverting on overflow
+     */
     function toInt256(uint256 x) internal pure returns (int256 y) {
         if (x <= uint256(type(int256).max)) {
             // forge-lint: disable-next-line(unsafe-typecast)
@@ -250,7 +284,8 @@ library Rationals {
     }
 
     /**
-     * @notice Returns the absolute value of an int
+     * @notice Returns the absolute value of an int256
+     * @dev Handles type(int256).min safely using unchecked negation
      */
     function _abs(int256 x) internal pure returns (uint256) {
         if (x >= 0) {
