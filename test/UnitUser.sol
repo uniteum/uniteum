@@ -18,7 +18,7 @@ contract UnitUser is User {
 
     function migrate(uint256 value) public {
         console.log("%s migrate", name, value);
-        ONE.UPSTREAM_ONE().approve(address(ONE), value);
+        ONE.UPSTREAM().approve(address(ONE), value);
         ONE.migrate(value);
         logBalance(ONE);
     }
@@ -35,6 +35,10 @@ contract UnitUser is User {
         console.log("dv:", dv);
         dw = U.forgeQuote(du, dv);
         console.log("dw:", dw);
+        if (address(U.anchor()) != address(0) && du > 0) {
+            // forge-lint: disable-next-line(unsafe-typecast)
+            U.anchor().approve(address(U), uint256(du));
+        }
         dw = U.forge(du, dv);
         logBalances();
         console.log("total 1:", ONE.totalSupply());

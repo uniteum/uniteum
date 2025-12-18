@@ -1,131 +1,110 @@
 # Uniteum
-Uniteum is an algebraic liquidity protocol on Ethereum.
 
-### **1. Environment Setup**
+Uniteum is an algebraic liquidity protocol on Ethereum where units are ERC-20 tokens with built-in liquidity via reciprocal relationships.
 
-#### **Install Node.js using NVM:**
+## Overview
+
+- **Built-in Liquidity**: Every unit U has a reciprocal 1/U with constant product invariant `u * v = w^2`
+- **Symbolic Algebra**: Units compose algebraically: `kg*m/s^2`, `m^2\3`
+- **Rational Exponents**: Full support for rational exponents (e.g., `x^2\3`, `kg^-1\2`)
+- **Anchored Units**: Custodial wrappers for external ERC-20 tokens (e.g., `$0xdAC17F958D2ee523a2206206994597C13D831ec7` for USDT)
+- **Kiosk System**: Native currency ↔ ERC-20 trading with fixed or discount pricing
+
+For comprehensive documentation, see [CLAUDE.md](CLAUDE.md).
+
+## Quick Start
+
 ```bash
-# Install NVM
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-
-# Activate NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-# Install and use Node.js
-nvm install --lts
-nvm use --lts
-```
-
-#### **Clone the Repository & Install Dependencies:**
-```bash
-git clone https://github.com/uniteum/uniteum.git
+# Clone and install
 git clone git@github.com:uniteum/uniteum.git
 cd uniteum
-npm install
+
+# Build
+forge build
+
+# Test
+forge test
 ```
 
-### Set environment variables
+## Environment Setup
 
-Set the following environment variables (in your .bashrc).
+### Environment Variables
+
+Set these in your `.bashrc` or `.zshrc`:
 
 ```bash
+# Required for deployment (keep secure!)
 export tx_key=<YOUR_PRIVATE_WALLET_KEY>
 export ETHERSCAN_API_KEY=<YOUR_ETHERSCAN_API_KEY>
+
+# Chain selection (optional)
+export chain=11155111  # Sepolia testnet
+# export chain=1       # Ethereum mainnet
+# export chain=8453    # Base
+# export chain=137     # Polygon
 ```
 
-The environment variable tx_key is the private key of the Ethereum account you want to use to initiate transactions such as deploying contracts.
 Get your ETHERSCAN_API_KEY at [Etherscan](https://etherscan.io/myaccount).
 
-Other environment variables that will come into play include the following.
-
-```bash
-export chain=97 # BNB testnet
-export chain=137 # Polygon
-export chain=11155111 # Sepolia, set to desired chain id
-```
-
-### Deploy
-
-```shell
-$ forge script script/Unit.s.sol:UnitScript --rpc-url bitsy --private-key "$PRIVATE_KEY"
-```
-
-### Encode Contructor Args
-
-```shell
-cast abi-encode "constructor(address,uint256,uint256,address,address)" <holder> <supply> <chain> <bridge> <verifier>
-```
-
-### Verify Contract
-
-```shell
-forge verify-contract --chain-id 11155111 --etherscan-api-key <your key> <contract address> src/Unit.sol:Unit --constructor-args <encoded constructor args>
-```
-
-## Foundry
-
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
-
-Foundry consists of:
-
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
+## Development
 
 ### Build
 
-```shell
-$ forge build
+```bash
+forge build
 ```
 
 ### Test
 
-```shell
-$ forge test
+```bash
+# Run all tests
+forge test
+
+# Run specific test
+forge test --match-test testForgeSimple
+
+# Run with gas report
+forge test --gas-report
+
+# Run with verbosity
+forge test -vvv
 ```
 
 ### Format
 
-```shell
-$ forge fmt
+```bash
+forge fmt
 ```
 
 ### Gas Snapshots
 
-```shell
-$ forge snapshot
+```bash
+forge snapshot
 ```
 
-### Anvil
+## Deployment
 
-```shell
-$ anvil
+### Deploy to Testnet (Sepolia)
+
+```bash
+chain=11155111
+forge script script/Unit.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
 ```
 
-### Deploy
+## Documentation
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+- [CLAUDE.md](CLAUDE.md) - Comprehensive protocol documentation
+- [Foundry Book](https://book.getfoundry.sh/) - Foundry development framework
 
-### Cast
+## Security
 
-```shell
-$ cast <subcommand>
-```
+This codebase uses:
+- Solidity 0.8.30+ with built-in overflow checks
+- EIP-1153 transient storage for reentrancy protection
+- Deterministic CREATE2 deployments
 
-### Help
+See [CLAUDE.md](CLAUDE.md) for detailed security considerations.
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## License
+
+See [LICENSE.Uniteum](LICENSE.Uniteum) file for details.

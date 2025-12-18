@@ -3,6 +3,7 @@
 pragma solidity ^0.8.30;
 
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IMigratable} from "./IMigratable.sol";
 
 /**
  * @title IUnit — A universal liquidity system based on symbolic units.
@@ -46,16 +47,25 @@ import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extens
  * - Powers/exponentials (e.g., constraining value across A and A^k like power perpetuals) are
  *   not enforced; this may be future work.
  *
- * @dev Non-promissory hypotheses (for readers’ intuition; not guarantees)
- * - As anchored collateral and unanchored participation grow, the value of “1” may tend to reflect
+ * @dev Non-promissory hypotheses (for readers' intuition; not guarantees)
+ * - As anchored collateral and unanchored participation grow, the value of "1" may tend to reflect
  *   aggregate system value (anchored + unanchored).
- * - With many diverse Units, “1” may exhibit reduced volatility via diversification effects.
+ * - With many diverse Units, "1" may exhibit reduced volatility via diversification effects.
  *
  * @dev Safety
  * - Anchored units are custodial: underlying tokens are held by this contract.
  * - This system uses no price oracles or off-chain dependencies.
+ *
+ * @dev Reentrancy Protection
+ * All state-changing functions use a transient reentrancy guard stored on the "1" unit
+ * per EIP-1153. This protects against malicious anchor token callbacks.
+ * @custom:security Uses transient storage; requires EVM version Cancun or later
+ *
+ * @dev Internal Function Naming Convention
+ * Functions prefixed with __ are restricted to calls from other Units in the same system (same ONE).
+ * These are used for cross-unit operations during forge.
  */
-interface IUnit is IERC20Metadata {
+interface IUnit is IERC20Metadata, IMigratable {
     /**
      * @notice Compute the constant product invariant for a reciprocal pair.
      * The implied price for the unit is w/u, and w/v for its reciprocal.
@@ -102,6 +112,7 @@ interface IUnit is IERC20Metadata {
      * @return dw Signed change of caller's 1 balance.
      */
     function forgeQuote(IUnit V, int256 du, int256 dv) external view returns (IUnit W, int256 dw);
+
     /**
      * @notice Compute the change of the caller's 1 balance that would result from forging this unit.
      *
@@ -153,7 +164,8 @@ interface IUnit is IERC20Metadata {
     function forge(int256 du, int256 dv) external returns (int256 dw);
 
     /**
-     * @notice Predict the address of the IUnit with the given symbol.
+     * @notice Predict the address of the IUnit resulting from multiplying by a symbolic expression.
+     * @dev View-only; does not create the unit. Use {multiply} to create if needed.
      * @param expression a string representation of the unit.
      * @return unit the IUnit for the given expression.
      * @return symbol the canonical form of the string representation of the unit.
@@ -161,15 +173,17 @@ interface IUnit is IERC20Metadata {
     function product(string memory expression) external view returns (IUnit unit, string memory symbol);
 
     /**
-     * @notice Create a new unit if it does not exist.
-     * @dev Example: one().multiply("m*kg").multiply("/s^2").symbol() == "kg*m/s^2"
-     * @param expression a string representation of the unit.
-     * @return unit the IUnit with the given symbol.
+     * @notice Create a new unit if it does not exist, or return existing unit.
+     * @dev Creates the unit by multiplying this unit with the expression.
+     * @param expression a string representation of the unit to multiply by.
+     * @return unit the IUnit with the resulting symbol.
      */
     function multiply(string memory expression) external returns (IUnit unit);
 
     /**
-     * @notice Find or product the logical product of this unit and another.
+     * @notice Predict the unit resulting from multiplying this unit by another unit.
+     * @dev View-only; uses cached product mapping when available, otherwise computes from symbols.
+     * Does not create the unit. Use {multiply} to create if needed.
      * @param multiplier The right-hand unit operand.
      * @return unit The IUnit representing the product.
      * @return symbol the canonical form of the string representation of the unit.
@@ -177,8 +191,8 @@ interface IUnit is IERC20Metadata {
     function product(IUnit multiplier) external view returns (IUnit unit, string memory symbol);
 
     /**
-     * @notice Find or multiply the product of this unit with a multiplier unit.
-     * @dev Example: one().multiply("m*kg").multiply(one().multiply("/s^2")).symbol() == "kg*m/s^2"
+     * @notice Create or return the product of this unit with another unit.
+     * @dev Creates the product unit if it doesn't exist, caches the mapping for future calls.
      * @param multiplier The right-hand unit operand.
      * @return product The new or existing IUnit representing the product.
      */
@@ -224,28 +238,6 @@ interface IUnit is IERC20Metadata {
     function anchor() external view returns (IERC20);
 
     /**
-     * @notice Upstream 1 token this contract accepts for migration.
-     * @dev Circulating supply is conserved across all migrations.
-     * @dev The most upstream 1 will not be an IUnit.
-     * @return upstream token this contract accepts for migration.
-     */
-    function UPSTREAM_ONE() external view returns (IERC20 upstream);
-
-    /**
-     * @notice Migrate upstream 1's to this 1.
-     * @dev Only callable on 1. Other units revert.
-     * @param units The number of 1's to migrate.
-     */
-    function migrate(uint256 units) external;
-
-    /**
-     * @notice Reverse migrate this 1 to it's upstream 1.
-     * @dev Only callable on 1. Other units revert.
-     * @param units The number of 1's to migrate.
-     */
-    function unmigrate(uint256 units) external;
-
-    /**
      * @dev Revert when called with duplicate units.
      */
     error DuplicateUnits();
@@ -261,9 +253,11 @@ interface IUnit is IERC20Metadata {
     error FunctionNotCalledOnOne();
 
     /**
-     * @dev Revert when a negative number of units is calculated due to insufficient supply.
+     * @dev Revert when a negative supply would result from an operation.
+     * @param unit The unit that would have negative supply.
+     * @param supply The calculated negative supply value.
      */
-    error NegativeSupply(IUnit, int256);
+    error NegativeSupply(IUnit unit, int256 supply);
 
     /**
      * @dev Reentrant calls are forbidden.
@@ -282,9 +276,23 @@ interface IUnit is IERC20Metadata {
      * @notice Emit when a holder calls forge.
      * @param holder The address whose balances were updated.
      * @param unit   The unit doing the forge.
-     * @param du     signed change to the holder’s balance of the unit.
-     * @param dv     signed change to the holder’s balance of the reciprocal unit.
-     * @param dw     signed change to the holder’s balance of 1.
+     * @param du     signed change to the holder's balance of the unit.
+     * @param dv     signed change to the holder's balance of the reciprocal unit.
+     * @param dw     signed change to the holder's balance of 1.
      */
     event Forge(address indexed holder, IUnit indexed unit, int256 du, int256 dv, int256 dw);
+
+    /**
+     * @notice Emitted when tokens are migrated into the system.
+     * @param user The address migrating tokens.
+     * @param amount Amount of tokens migrated.
+     */
+    event Migrate(address indexed user, uint256 amount);
+
+    /**
+     * @notice Emitted when tokens are unmigrated from the system.
+     * @param user The address unmigrating tokens.
+     * @param amount Amount of tokens unmigrated.
+     */
+    event Unmigrate(address indexed user, uint256 amount);
 }

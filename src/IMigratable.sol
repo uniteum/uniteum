@@ -2,13 +2,23 @@
 
 pragma solidity ^0.8.30;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 /**
  * @title IMigratable
  * @notice Interface for tokens that support migration from an upstream version.
  * @dev Tokens implementing this interface can accept upstream tokens and issue
  *      an equivalent amount of this token in exchange.
+ * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 interface IMigratable {
+    /**
+     * @notice Upstream token this contract accepts for migration.
+     * @dev Circulating supply is conserved across all migrations.
+     * @return upstream token this contract accepts for migration.
+     */
+    function UPSTREAM() external view returns (IERC20 upstream);
+
     /**
      * @notice Migrate upstream tokens to this token.
      * @dev The caller must approve this contract to transfer the upstream tokens.
@@ -20,7 +30,7 @@ interface IMigratable {
 
     /**
      * @notice Reverse migrate this token to its upstream token.
-     * @dev The caller's tokens are burned/transferred to this contract,
+     * @dev The caller's tokens are transferred to this contract,
      *      and an equivalent amount of upstream tokens is transferred to the caller.
      * @param amount The number of tokens to reverse migrate.
      */
@@ -32,11 +42,7 @@ interface IMigratable {
      * @param downstream The downstream token address (destination).
      * @param amount The number of tokens migrated.
      */
-    event Migrated(
-        address indexed upstream,
-        address indexed downstream,
-        uint256 amount
-    );
+    event Migrated(address indexed upstream, address indexed downstream, uint256 amount);
 
     /**
      * @notice Emitted when tokens are reverse migrated from downstream to upstream.
@@ -44,9 +50,5 @@ interface IMigratable {
      * @param downstream The downstream token address (source).
      * @param amount The number of tokens reverse migrated.
      */
-    event Unmigrated(
-        address indexed upstream,
-        address indexed downstream,
-        uint256 amount
-    );
+    event Unmigrated(address indexed upstream, address indexed downstream, uint256 amount);
 }

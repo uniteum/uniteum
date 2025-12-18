@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.30;
 
-import {IUnit, IERC20} from "./IUnit.sol";
+import {IUnit, IMigratable, IERC20} from "./IUnit.sol";
 import {CloneERC20, Prototype} from "./CloneERC20.sol";
 import {Units, Term} from "./Units.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -22,7 +22,7 @@ contract Unit is CloneERC20, IUnit {
     string public constant ONE_SYMBOL = "1";
 
     /// @notice The ERC-20 symbol for the central 1 token.
-    string public constant NAME_PREFIX = "Uniteum 0.1 ";
+    string public constant NAME_PREFIX = "Uniteum 0.2 ";
 
     /// @notice The total original supply of {1} minted.
     /// @dev The total supply of {1} will never exceed this value.
@@ -63,8 +63,8 @@ contract Unit is CloneERC20, IUnit {
             (u, v, w) = invariant();
         } else {
             (W,) = product(V);
-            u = W.balanceOf(address(this));
-            v = W.balanceOf(address(V));
+            u = this.balanceOf(address(W));
+            v = V.balanceOf(address(W));
             w = invariant(u, v);
         }
     }
@@ -79,7 +79,11 @@ contract Unit is CloneERC20, IUnit {
         uint256 w1 = invariant(u1, v1);
 
         // forge-lint: disable-next-line(unsafe-typecast)
-        dw = 2 * (int256(w0) - int256(w1));
+        dw = int256(w0) - int256(w1);
+        // Double dw if no anchor tokens are involved to keep the invariant balanced.
+        if (address(anchor) == address(0) && address(reciprocal.anchor()) == address(0)) {
+            dw *= 2;
+        }
     }
 
     /// @inheritdoc IUnit
@@ -152,10 +156,6 @@ contract Unit is CloneERC20, IUnit {
      */
     function __transfer(address from, address to, uint256 units) public onlyUnit {
         _transfer(from, to, units);
-        // If this Unit wraps an external token, send the wrapped tokens to the holder.
-        if (address(anchor) != address(0)) {
-            anchor.safeTransferFrom(address(this), to, units);
-        }
     }
 
     /**
@@ -166,10 +166,6 @@ contract Unit is CloneERC20, IUnit {
      */
     function __burn(address holder, uint256 units) public onlyUnit {
         _burn(holder, units);
-        // If this Unit wraps an external token, send the wrapped tokens to the holder.
-        if (address(anchor) != address(0)) {
-            anchor.safeTransferFrom(address(this), holder, units);
-        }
     }
 
     /**
@@ -352,23 +348,27 @@ contract Unit is CloneERC20, IUnit {
         REENTRANCY_GUARD_STORAGE.asBoolean().tstore(false);
     }
 
-    IERC20 public immutable UPSTREAM_ONE;
+    IERC20 public immutable UPSTREAM;
 
+    /// @inheritdoc IMigratable
     function migrate(uint256 units) external onlyOne {
-        UPSTREAM_ONE.safeTransferFrom(msg.sender, address(this), units);
+        UPSTREAM.safeTransferFrom(msg.sender, address(this), units);
         _mint(msg.sender, units);
+        emit Migrate(msg.sender, units);
     }
 
+    /// @inheritdoc IMigratable
     function unmigrate(uint256 units) external onlyOne {
         _burn(msg.sender, units);
-        UPSTREAM_ONE.safeTransferFrom(address(this), msg.sender, units);
+        UPSTREAM.safeTransferFrom(address(this), msg.sender, units);
+        emit Unmigrate(msg.sender, units);
     }
 
     constructor(IERC20 upstream) CloneERC20(ONE_SYMBOL, ONE_SYMBOL) {
         reciprocal = this;
         _symbol = ONE_SYMBOL;
         _name = string.concat(NAME_PREFIX, ONE_SYMBOL);
-        UPSTREAM_ONE = upstream;
+        UPSTREAM = upstream;
         emit UnitCreate(this, anchor, bytes32(0), _symbol);
     }
 }

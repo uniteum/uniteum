@@ -7,6 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /**
  * @title IKiosk
  * @notice Interface for kiosks that sell ERC-20 tokens in return for native currency.
+ * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 interface IKiosk {
     /**
@@ -67,11 +68,7 @@ interface IKiosk {
      * @param valueSent The amount of native tokens sent.
      * @param quantityBought The quantity of goods bought.
      */
-    event KioskSoldOut(
-        address buyer,
-        uint256 valueSent,
-        uint256 quantityBought
-    );
+    event KioskSoldOut(address buyer, uint256 valueSent, uint256 quantityBought);
 
     /**
      * @notice Emit when goods are bought from the kiosk.
