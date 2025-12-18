@@ -19,14 +19,25 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 contract Uniteum is ERC20 {
-    /// @notice Total fixed supply: 1 billion tokens with 18 decimals.
-    uint256 constant ONE_MINTED = 1e9 ether;
+    string constant NAME = "Uniteum 0.0 1";
+
+    string constant SYMBOL = "1";
 
     /**
-     * @notice Deploys primordial "1" and mints initial supply to deployer.
-     * @dev Mints ONE_MINTED tokens to msg.sender. No further minting possible.
+     * @notice Total minted supply: 1 billion tokens with 18 decimals.
      */
-    constructor() ERC20("Uniteum 0.0 1", "1") {
-        _mint(msg.sender, ONE_MINTED);
+    uint256 constant MAX_SUPPLY = 1e9 ether;
+
+    /**
+     * @notice Total minted supply: 1 billion tokens with 18 decimals.
+     */
+    address constant ISSUER = 0xEbCaD83FeAD16e7D18DD691fFD2b39eca56677d8;
+
+    /**
+     * @notice Deploys primordial "1" and mints MAX_SUPPLY to ISSUER.
+     * @dev No further minting possible.
+     */
+    constructor() ERC20(NAME, SYMBOL) {
+        _mint(ISSUER, MAX_SUPPLY);
     }
 }

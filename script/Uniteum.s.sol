@@ -6,7 +6,7 @@ import {Script, console2} from "forge-std/Script.sol";
 import {Uniteum} from "../src/Uniteum.sol";
 
 /// @notice Deploy the Uniteum 0.0 1 contract.
-/// @dev Usage: forge script script/Uniteum.s.sol -f $chain --private-key $tx_key
+/// @dev Usage: forge script script/Uniteum.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
 contract UniteumCreate2 is Script {
     function run() external {
         vm.startBroadcast();

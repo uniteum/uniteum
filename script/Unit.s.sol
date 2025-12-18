@@ -8,7 +8,7 @@ import {Unit, IERC20} from "../src/Unit.sol";
 /// @notice Deploy the BridgeFactory contract.
 /// @dev Usage: forge script script/Unit.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
 contract UnitCreate2 is Script {
-    address constant UPSTREAM = 0xfe5dEC33a41a20e3A6F4b524713597fa8779d8B1;
+    address constant UPSTREAM = 0x8af6774Bec3b698a6dC873b117c4415367dEfea6;
 
     function run() public {
         vm.startBroadcast();
