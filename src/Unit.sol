@@ -133,7 +133,7 @@ contract Unit is CloneERC20, IUnit {
     /// @dev This function must be non-reentrant to thwart malicious anchor tokens.
     /// @dev Revert if called on 1 via call to invariant().
     function forge(IUnit V, int256 du, int256 dv) external nonReentrant returns (IUnit W, int256 dw) {
-        (Unit(address(multiply(V)))).sqrtResolve();
+        multiply(V).sqrtResolve();
         (W, dw) = forgeQuote(V, du, dv); // Also check for notOne.
         // forge-lint: disable-next-line(unsafe-typecast)
         if (du < 0) this.__transfer(msg.sender, address(W), uint256(-du));
@@ -297,6 +297,7 @@ contract Unit is CloneERC20, IUnit {
         }
     }
 
+    /// @inheritdoc IUnit
     function sqrtResolve() external returns (IUnit root) {
         if (_sqrt != IUnit(address(0))) {
             return _sqrt;

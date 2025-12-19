@@ -240,6 +240,11 @@ interface IUnit is IERC20Metadata, IMigratable {
     function sqrt() external view returns (IUnit root, string memory symbol);
 
     /**
+     * @notice Ensure the sqrt of this unit is deployed.
+     */
+    function sqrtResolve() external returns (IUnit root);
+
+    /**
      * @return The external token, if any, anchored to this unit.
      */
     function anchor() external view returns (IERC20);

@@ -81,7 +81,8 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         console.log("\n=== Step 3: Create compound unit ($WBTC * $WETH) ===");
 
         // First, create the compound unit contract
-        compound = awbtc.multiply(aweth);
+        awbtc.multiply(aweth).sqrtResolve();
+        (compound,) = awbtc.multiply(aweth).sqrt();
         alex.addToken(compound);
         alex.addToken(compound.reciprocal());
 
@@ -143,7 +144,8 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         alex.forge(aweth, 10, 10);
 
         // Create the compound unit contract
-        compound = awbtc.multiply(aweth);
+        awbtc.multiply(aweth).sqrtResolve();
+        (compound,) = awbtc.multiply(aweth).sqrt();
         alex.addToken(compound);
 
         // Forge the compound
