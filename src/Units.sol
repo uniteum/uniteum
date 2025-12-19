@@ -129,7 +129,7 @@ library Units {
         if (termType_ != ANCHOR_TERM_TYPE) {
             // forge-lint: disable-next-line(unsafe-typecast)
             symbol_ = bytes30(uint240(bits >> 16));
-        } else if (isBase_) {
+        } else {
             // forge-lint: disable-next-line(unsafe-typecast)
             tokenAddress_ = address(uint160(bits >> ANCHOR_SHIFT));
         }
@@ -213,10 +213,8 @@ library Units {
     /// @dev Return the sqrt terms. Modifies the input.
     function sqrt(Term[] memory terms) internal pure returns (Term[] memory root) {
         root = terms;
-        unchecked {
-            for (uint256 i = 0; i < terms.length; ++i) {
-                root[i] = terms[i].sqrt();
-            }
+        for (uint256 i = 0; i < terms.length; ++i) {
+            root[i] = terms[i].sqrt();
         }
     }
 

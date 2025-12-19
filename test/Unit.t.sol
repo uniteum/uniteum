@@ -10,6 +10,7 @@ contract UnitTest is UnitBaseTest {
 
     address constant USDT_ADDRESS = 0xffD4505B3452Dc22f8473616d50503bA9E1710Ac;
     string constant USDT_SYMBOL = "$0xffD4505B3452Dc22f8473616d50503bA9E1710Ac";
+    string constant WETH_SYMBOL = "$0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
     string public constant NAME_PREFIX = "Uniteum 0.4 ";
 
     function testOneSymbolIs1() public view {
@@ -33,6 +34,20 @@ contract UnitTest is UnitBaseTest {
         assertEq(wrap.symbol(), s, "wrap.symbol()");
         assertEq(address(wrap.anchor()), extoken, "wrap.wrapped()");
         assertEq(address(wrap.reciprocal().anchor()), address(0), "reciprocal should not have anchor");
+    }
+
+    function testAnchoredUnitGeometricMean() public {
+        IUnit usdt = unit(USDT_SYMBOL);
+        IUnit weth = unit(WETH_SYMBOL);
+        IUnit prod = usdt.multiply(weth);
+        assertEq(prod.symbol(), string.concat(WETH_SYMBOL, "*", USDT_SYMBOL), "product symbol");
+        (IUnit mean, string memory actual) = prod.sqrt();
+        string memory expected = string.concat(WETH_SYMBOL, "^1\\2*", USDT_SYMBOL, "^1\\2");
+        assertEq(actual, expected, "geometric mean symbol predicted");
+        prod.sqrtResolve();
+        (mean, actual) = prod.sqrt();
+        actual = mean.symbol();
+        assertEq(actual, expected, "geometric mean symbol resolved");
     }
 
     function unaryTest(string memory s, string memory canonical, string memory r) public {

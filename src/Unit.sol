@@ -8,7 +8,6 @@ import {Units, Term} from "./Units.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {TransientSlot} from "@openzeppelin/contracts/utils/TransientSlot.sol";
-import {console2} from "forge-std/Test.sol";
 
 /**
  * @title IUnit — A universal liquidity system based on symbolic units.
