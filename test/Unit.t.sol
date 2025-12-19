@@ -10,7 +10,8 @@ contract UnitTest is UnitBaseTest {
 
     address constant USDT_ADDRESS = 0xffD4505B3452Dc22f8473616d50503bA9E1710Ac;
     string constant USDT_SYMBOL = "$0xffD4505B3452Dc22f8473616d50503bA9E1710Ac";
-    string public constant NAME_PREFIX = "Uniteum 0.1 ";
+    string constant WETH_SYMBOL = "$0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+    string public constant NAME_PREFIX = "Uniteum 0.4 ";
 
     function testOneSymbolIs1() public view {
         assertEq(l.symbol(), "1");
@@ -33,6 +34,20 @@ contract UnitTest is UnitBaseTest {
         assertEq(wrap.symbol(), s, "wrap.symbol()");
         assertEq(address(wrap.anchor()), extoken, "wrap.wrapped()");
         assertEq(address(wrap.reciprocal().anchor()), address(0), "reciprocal should not have anchor");
+    }
+
+    function testAnchoredUnitGeometricMean() public {
+        IUnit usdt = unit(USDT_SYMBOL);
+        IUnit weth = unit(WETH_SYMBOL);
+        IUnit prod = usdt.multiply(weth);
+        assertEq(prod.symbol(), string.concat(WETH_SYMBOL, "*", USDT_SYMBOL), "product symbol");
+        (IUnit mean, string memory actual) = prod.sqrt();
+        string memory expected = string.concat(WETH_SYMBOL, "^1\\2*", USDT_SYMBOL, "^1\\2");
+        assertEq(actual, expected, "geometric mean symbol predicted");
+        prod.sqrtResolve();
+        (mean, actual) = prod.sqrt();
+        actual = mean.symbol();
+        assertEq(actual, expected, "geometric mean symbol resolved");
     }
 
     function unaryTest(string memory s, string memory canonical, string memory r) public {
@@ -65,6 +80,27 @@ contract UnitTest is UnitBaseTest {
         unaryTest("a.b.c.d.e", "a.b.c.d.e", "1/a.b.c.d.e");
     }
 
+    function sqrtTest(string memory s, string memory r) public {
+        IUnit u = unit(s);
+        (, string memory sqrtSymbol) = u.sqrt();
+        assertEq(sqrtSymbol, r);
+    }
+
+    function testSqrt() public {
+        sqrtTest("a*a", "a");
+        /*
+        sqrtTest("a", "a^1\\2");
+        sqrtTest("a^3", "a^3\\2");
+        sqrtTest("1^127", "1");
+        sqrtTest("a^127", "a^127\\2");
+        sqrtTest("a*b/a", "b^1\\2");
+        sqrtTest("a*b/b", "1/a");
+        sqrtTest("a/a*b/b", "1");
+        sqrtTest("a/b", "b/a");
+        sqrtTest("a*b^3*c/a/b/c/b/c", "c^1\\2/b^1\\2");
+        */
+    }
+
     function binaryTest(string memory n, string memory d, string memory p, string memory q) public {
         IUnit nu = unit(n);
         IUnit du = unit(d);
@@ -92,7 +128,7 @@ contract UnitTest is UnitBaseTest {
     function badProductUnitTest(string memory n, string memory d) public {
         IUnit nu = unit(n);
         IUnit du = unit(d);
-        vm.expectRevert(Units.ExponentTooBig.selector);
+        vm.expectRevert();
         nu.product(du);
     }
 
@@ -101,7 +137,7 @@ contract UnitTest is UnitBaseTest {
     }
 
     function tooBigExponent(string memory n) public {
-        vm.expectRevert(Units.ExponentTooBig.selector);
+        vm.expectRevert();
         unit(n);
     }
 

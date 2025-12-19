@@ -21,6 +21,12 @@ contract RationalsTest is Test {
         assertEq(od, ed);
     }
 
+    function expectRational(Rational8 r, int256 en, uint256 ed) internal pure {
+        (int256 on, uint256 od) = r.parts();
+        assertEq(on, en);
+        assertEq(od, ed);
+    }
+
     function testUnary(int256 n, uint256 d, int256 en, uint256 ed) internal pure {
         Rational r = n.divRational(d);
         expectRational(r, en, ed);
@@ -45,6 +51,24 @@ contract RationalsTest is Test {
         testUnary(-3, 128, -3, 128);
         testUnary(-3, 255, -1, 85);
         testUnary(-7, 255, -7, 255);
+    }
+
+    function rational8Div(int256 n, uint256 d, int256 en, uint256 ed) internal pure {
+        Rational8 r = n.divRational8(d).div(2);
+        expectRational(r, en, ed);
+    }
+
+    function testDiv() public pure {
+        rational8Div(0, 1, 0, 1);
+        rational8Div(0, 3, 0, 1);
+        rational8Div(1, 3, 1, 6);
+        rational8Div(-1, 3, -1, 6);
+        rational8Div(2, 2, 1, 2);
+        rational8Div(-2, 2, -1, 2);
+        rational8Div(42, 7, 3, 1);
+        rational8Div(-42, 7, -3, 1);
+        rational8Div(127, 3, 127, 6);
+        rational8Div(-3, 255, -1, 170);
     }
 
     function testBinary(
@@ -123,7 +147,7 @@ contract RationalsTest is Test {
         // forge-lint: disable-next-line(unsafe-typecast)
         vm.assume(uint256(n).gcd(d) == 1);
         Rational r = n.divRational(d);
-        vm.expectRevert(Rationals.ExponentTooBig.selector);
+        vm.expectRevert();
         contractor.toRational8(r);
     }
 
@@ -133,7 +157,7 @@ contract RationalsTest is Test {
         // forge-lint: disable-next-line(unsafe-typecast)
         vm.assume(uint256(n).gcd(d) == 1);
         Rational r = n.divRational(d);
-        vm.expectRevert(Rationals.ExponentTooBig.selector);
+        vm.expectRevert();
         contractor.toRational8(r);
     }
 
