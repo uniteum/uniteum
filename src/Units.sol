@@ -205,6 +205,21 @@ library Units {
         }
     }
 
+    /// @dev Return the sqrt of a term (halves exponent)
+    function sqrt(Term term) internal pure returns (Term root) {
+        root = term.withExponent(term.exponent().div(2));
+    }
+
+    /// @dev Return the sqrt terms. Modifies the input.
+    function sqrt(Term[] memory terms) internal pure returns (Term[] memory root) {
+        root = terms;
+        unchecked {
+            for (uint256 i = 0; i < terms.length; ++i) {
+                root[i] = terms[i].sqrt();
+            }
+        }
+    }
+
     /// @dev Concatenates three strings
     function add(string memory s1, string memory s2, string memory s3) internal pure returns (string memory) {
         return string.concat(s1, s2, s3);

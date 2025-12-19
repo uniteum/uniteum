@@ -233,6 +233,13 @@ interface IUnit is IERC20Metadata, IMigratable {
     function reciprocal() external view returns (IUnit);
 
     /**
+     * @return root The IUnit representing the sqrt of this unit.
+     * @return symbol the canonical form of the string representation of the unit.
+     * Symbol is only returned if the root is not known to be deployed.
+     */
+    function sqrt() external view returns (IUnit root, string memory symbol);
+
+    /**
      * @return The external token, if any, anchored to this unit.
      */
     function anchor() external view returns (IERC20);

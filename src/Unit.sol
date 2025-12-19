@@ -8,6 +8,7 @@ import {Units, Term} from "./Units.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {TransientSlot} from "@openzeppelin/contracts/utils/TransientSlot.sol";
+import {console2} from "forge-std/Test.sol";
 
 /**
  * @title IUnit — A universal liquidity system based on symbolic units.
@@ -22,7 +23,7 @@ contract Unit is CloneERC20, IUnit {
     string public constant ONE_SYMBOL = "1";
 
     /// @notice The ERC-20 symbol for the central 1 token.
-    string public constant NAME_PREFIX = "Uniteum 0.3 ";
+    string public constant NAME_PREFIX = "Uniteum 0.4 ";
 
     /// @notice The total original supply of {1} minted.
     /// @dev The total supply of {1} will never exceed this value.
@@ -62,7 +63,8 @@ contract Unit is CloneERC20, IUnit {
             W = one();
             (u, v, w) = invariant();
         } else {
-            (W,) = product(V);
+            (IUnit P,) = product(V);
+            (W,) = P.sqrt();
             u = this.balanceOf(address(W));
             v = V.balanceOf(address(W));
             w = invariant(u, v);
@@ -131,6 +133,7 @@ contract Unit is CloneERC20, IUnit {
     /// @dev This function must be non-reentrant to thwart malicious anchor tokens.
     /// @dev Revert if called on 1 via call to invariant().
     function forge(IUnit V, int256 du, int256 dv) external nonReentrant returns (IUnit W, int256 dw) {
+        (Unit(address(multiply(V)))).sqrtResolve();
         (W, dw) = forgeQuote(V, du, dv); // Also check for notOne.
         // forge-lint: disable-next-line(unsafe-typecast)
         if (du < 0) this.__transfer(msg.sender, address(W), uint256(-du));
@@ -210,7 +213,8 @@ contract Unit is CloneERC20, IUnit {
         if (terms.length == 1) {
             anchor = IERC20(terms[0].anchor());
         }
-        (address reciprocalAddress,) = __clone(bytes(terms.reciprocal().sortAndMerge().symbol()));
+        terms = terms.reciprocal().sortAndMerge();
+        (address reciprocalAddress,) = __clone(bytes(terms.symbol()));
         reciprocal = IUnit(reciprocalAddress);
     }
 
@@ -278,6 +282,31 @@ contract Unit is CloneERC20, IUnit {
             unit = multiply(multiplier.symbol());
             _products[multiplier] = unit;
         }
+    }
+
+    IUnit private _sqrt;
+
+    /// @inheritdoc IUnit
+    function sqrt() public view returns (IUnit unit, string memory canonical) {
+        unit = _sqrt;
+        if (address(unit) == address(0)) {
+            Term[] memory terms = symbol().parseTerms().sqrt();
+            canonical = terms.symbol();
+            (address sqrtAddress,) = __predict(bytes(canonical));
+            unit = IUnit(sqrtAddress);
+        }
+    }
+
+    function sqrtResolve() external returns (IUnit root) {
+        if (_sqrt != IUnit(address(0))) {
+            return _sqrt;
+        }
+        string memory sqrtSymbol;
+        (root, sqrtSymbol) = sqrt();
+        if (address(root).code.length == 0) {
+            __clone(bytes(sqrtSymbol));
+        }
+        _sqrt = root;
     }
 
     modifier onlyUnit() {
@@ -366,6 +395,7 @@ contract Unit is CloneERC20, IUnit {
 
     constructor(IERC20 upstream) CloneERC20(ONE_SYMBOL, ONE_SYMBOL) {
         reciprocal = this;
+        _sqrt = this;
         _symbol = ONE_SYMBOL;
         _name = string.concat(NAME_PREFIX, ONE_SYMBOL);
         UPSTREAM = upstream;

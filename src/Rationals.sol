@@ -29,8 +29,8 @@ library Rationals {
      * @dev Reverts when a value cannot safely downcast to a smaller type
      */
     error ExponentTooBig();
-    error DenominatorTooBig();
-    error NumeratorTooBig();
+    error DenominatorTooBig(uint256 d);
+    error NumeratorTooBig(int256 n);
 
     /**
      * @dev Reverts when exact Rat16 encoding is impossible
@@ -82,11 +82,11 @@ library Rationals {
         d /= uint128(g);
 
         if (n < -NUMERATOR_MAX || NUMERATOR_MAX < n) {
-            revert NumeratorTooBig();
+            revert NumeratorTooBig(n);
         }
 
         if (d > DENOMINATOR_MAX) {
-            revert DenominatorTooBig();
+            revert DenominatorTooBig(d);
         }
 
         // forge-lint: disable-next-line(unsafe-typecast)
@@ -201,15 +201,15 @@ library Rationals {
 
         uint256 g = gcd(_abs(n), d);
         // forge-lint: disable-next-line(unsafe-typecast)
-        n /= int8(uint8(g));
+        n /= int256(g);
         // forge-lint: disable-next-line(unsafe-typecast)
-        d /= uint8(g);
+        d /= g;
 
         if (n < -NUMERATOR8_MAX || n > NUMERATOR8_MAX) {
-            revert ExponentTooBig();
+            revert NumeratorTooBig(n);
         }
         if (d > DENOMINATOR8_MAX) {
-            revert ExponentTooBig();
+            revert DenominatorTooBig(d);
         }
         // forge-lint: disable-next-line(unsafe-typecast)
         int256 encoded = (n << 8) | int256(uint256(d));
@@ -232,6 +232,14 @@ library Rationals {
      */
     function add(Rational8 a, Rational8 b) internal pure returns (Rational8) {
         return a.toRational().add(b.toRational()).toRational8();
+    }
+
+    /**
+     * @notice Divides a Rational8 values by an unsigned integer
+     */
+    function div(Rational8 a, uint256 b) internal pure returns (Rational8 q) {
+        (int256 n, uint256 d) = a.parts();
+        q = n.divRational8(d * b);
     }
 
     /**
