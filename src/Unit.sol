@@ -71,7 +71,6 @@ contract Unit is CloneERC20, IUnit {
     }
 
     /// @inheritdoc IUnit
-    /// @dev Revert if called on 1 via call to invariant().
     function forgeQuote(int256 du, int256 dv) public view returns (int256 dw) {
         (uint256 u0, uint256 v0, uint256 w0) = invariant();
 
@@ -88,7 +87,6 @@ contract Unit is CloneERC20, IUnit {
     }
 
     /// @inheritdoc IUnit
-    /// @dev Revert if called on 1 via call to invariant().
     function forgeQuote(IUnit V, int256 du, int256 dv) public view returns (IUnit W, int256 dw) {
         if (address(V) == address(reciprocal)) {
             W = one();
