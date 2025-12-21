@@ -159,4 +159,118 @@ contract UnitHelperTest is UnitBaseTest {
         assertEq(units[0].symbol(), "b", "should simplify a*b/a to b");
         assertEq(units[1].symbol(), "m^2", "should reduce m^4\\2 to m^2");
     }
+
+    /**
+     * @notice Test product with empty array.
+     */
+    function testProductEmpty() public view {
+        string[] memory expressions = new string[](0);
+        (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
+        assertEq(units.length, 0, "should return empty units array");
+        assertEq(symbols.length, 0, "should return empty symbols array");
+    }
+
+    /**
+     * @notice Test product with single element.
+     */
+    function testProductSingle() public view {
+        string[] memory expressions = new string[](1);
+        expressions[0] = "USD";
+
+        (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
+
+        assertEq(units.length, 1, "should return single unit");
+        assertEq(symbols.length, 1, "should return single symbol");
+        assertEq(symbols[0], "USD", "should have correct symbol");
+    }
+
+    /**
+     * @notice Test product with multiple elements.
+     */
+    function testProductMultiple() public view {
+        string[] memory expressions = new string[](3);
+        expressions[0] = "USD";
+        expressions[1] = "ETH";
+        expressions[2] = "kg";
+
+        (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
+
+        assertEq(units.length, 3, "should return three units");
+        assertEq(symbols.length, 3, "should return three symbols");
+        assertEq(symbols[0], "USD", "first symbol");
+        assertEq(symbols[1], "ETH", "second symbol");
+        assertEq(symbols[2], "kg", "third symbol");
+    }
+
+    /**
+     * @notice Test product with compound units.
+     */
+    function testProductCompound() public view {
+        string[] memory expressions = new string[](4);
+        expressions[0] = "kg*m/s^2";
+        expressions[1] = "USD/ETH";
+        expressions[2] = "m^2";
+        expressions[3] = "kg^1\\3";
+
+        (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
+
+        assertEq(units.length, 4, "should return four units");
+        assertEq(symbols.length, 4, "should return four symbols");
+        assertEq(symbols[0], "kg*m/s^2", "force unit");
+        assertEq(symbols[1], "USD/ETH", "exchange rate");
+        assertEq(symbols[2], "m^2", "area");
+        assertEq(symbols[3], "kg^1\\3", "rational exponent");
+    }
+
+    /**
+     * @notice Test product normalizes symbols.
+     */
+    function testProductNormalization() public view {
+        string[] memory expressions = new string[](2);
+        expressions[0] = "a*b/a";
+        expressions[1] = "m^4\\2";
+
+        (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
+
+        assertEq(units.length, 2, "should return two units");
+        assertEq(symbols.length, 2, "should return two symbols");
+        assertEq(symbols[0], "b", "should simplify a*b/a to b");
+        assertEq(symbols[1], "m^2", "should reduce m^4\\2 to m^2");
+    }
+
+    /**
+     * @notice Test product on non-identity unit.
+     */
+    function testProductOnNonIdentity() public {
+        IUnit usd = l.multiply("USD");
+
+        string[] memory expressions = new string[](2);
+        expressions[0] = "ETH";
+        expressions[1] = "m";
+
+        (IUnit[] memory units, string[] memory symbols) = helper.product(usd, expressions);
+
+        assertEq(units.length, 2, "should return two units");
+        assertEq(symbols.length, 2, "should return two symbols");
+        assertEq(symbols[0], "ETH*USD", "should be ETH*USD");
+        assertEq(symbols[1], "USD*m", "should be USD*m");
+    }
+
+    /**
+     * @notice Test product is view-only and doesn't create units.
+     */
+    function testProductIsViewOnly() public {
+        string[] memory expressions = new string[](1);
+        expressions[0] = "NEWTOKEN";
+
+        // Call product (view-only)
+        (IUnit[] memory predictedUnits, string[] memory symbols) = helper.product(l, expressions);
+        assertEq(symbols[0], "NEWTOKEN", "should predict symbol");
+
+        // Verify unit doesn't exist yet by checking if multiply creates it
+        IUnit[] memory createdUnits = helper.multiply(l, expressions);
+        assertEq(
+            address(predictedUnits[0]), address(createdUnits[0]), "product should predict same address as multiply"
+        );
+    }
 }
