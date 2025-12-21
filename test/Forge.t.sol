@@ -59,6 +59,21 @@ contract ForgeTest is UnitBaseTest {
     }
 
     /**
+     * @dev This test case illustrates that a forger that mints a unit and its reciprocal makes money if the price changes after forging.
+     * The is the complement to impermanent loss.
+     */
+    function testVolatilityHedge() public returns (int256 du, int256 dv, int256 dw) {
+        owen.give(address(alex), 1e3, l);
+        owen.give(address(beck), 1e7, l);
+        dw = alex.forge(U, 500, 500);
+        dw = beck.forge(U, 5e5, 1e6);
+        (du, dv, dw) = alex.liquidate(U);
+        assertLt(1e3, alex.balance(l), "alex should have more 1");
+        (du, dv, dw) = beck.liquidate(U);
+        assertLt(beck.balance(l), 1e7, "beck should have less 1");
+    }
+
+    /**
      * @dev This test case illustrates what happens when alex sells off 1 of two equally priced pairs.
      * beck sells after, then alex sells to rebalance
      */
