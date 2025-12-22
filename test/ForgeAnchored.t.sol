@@ -30,6 +30,12 @@ contract ForgeAnchoredTest is UnitBaseTest {
         owen.give(address(alex), initialOne, l);
 
         dw = alex.forge(awbtc, 1, 0);
+        assertEq(awbtc.balanceOf(address(alex)), 1, "alex should have 1 awbtc");
+        assertEq(wbtc.balanceOf(address(alex)), 1e6 - 1, "alex should have 1e6 - 1 wbtc");
+        dw = alex.forge(awbtc, -1, 0);
+        assertEq(awbtc.balanceOf(address(alex)), 0, "alex should have 0 awbtc");
+        assertEq(wbtc.balanceOf(address(alex)), 1e6, "alex should have 1e6 wbtc");
+        dw = alex.forge(awbtc, 1, 0);
         dw = alex.forge(awbtc, 0, 1);
         dw = alex.forge(awbtc, 1, 0);
         dw = alex.forge(awbtc, 0, 1);
