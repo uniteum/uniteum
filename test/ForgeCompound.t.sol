@@ -23,7 +23,7 @@ contract ForgeCompoundTest is UnitBaseTest {
         alex.addToken(W.reciprocal());
     }
 
-    function testForgeW() public returns (int256 dw) {
+    function test_ForgeW() public returns (int256 dw) {
         owen.give(address(alex), initialOne, l);
 
         dw = alex.forge(W, 100, 100);

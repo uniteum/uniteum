@@ -18,7 +18,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply with empty array.
      */
-    function testMultiplyEmpty() public {
+    function test_MultiplyEmpty() public {
         string[] memory expressions = new string[](0);
         IUnit[] memory units = helper.multiply(l, expressions);
         assertEq(units.length, 0, "should return empty array");
@@ -27,7 +27,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply with single element.
      */
-    function testMultiplySingle() public {
+    function test_MultiplySingle() public {
         string[] memory expressions = new string[](1);
         expressions[0] = "USD";
 
@@ -40,7 +40,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply with multiple elements.
      */
-    function testMultiplyMultiple() public {
+    function test_MultiplyMultiple() public {
         string[] memory expressions = new string[](3);
         expressions[0] = "USD";
         expressions[1] = "ETH";
@@ -57,7 +57,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply with compound units.
      */
-    function testMultiplyCompound() public {
+    function test_MultiplyCompound() public {
         string[] memory expressions = new string[](4);
         expressions[0] = "kg*m/s^2";
         expressions[1] = "USD/ETH";
@@ -76,7 +76,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply creates units that can be used in forge.
      */
-    function testMultiplyForge() public {
+    function test_MultiplyForge() public {
         string[] memory expressions = new string[](2);
         expressions[0] = "USD";
         expressions[1] = "ETH";
@@ -102,7 +102,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply with duplicate symbols returns same unit.
      */
-    function testMultiplyDuplicates() public {
+    function test_MultiplyDuplicates() public {
         string[] memory expressions = new string[](3);
         expressions[0] = "USD";
         expressions[1] = "ETH";
@@ -118,7 +118,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply on non-identity unit.
      */
-    function testMultiplyOnNonIdentity() public {
+    function test_MultiplyOnNonIdentity() public {
         IUnit usd = l.multiply("USD");
 
         string[] memory expressions = new string[](2);
@@ -135,7 +135,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply with anchored token symbol.
      */
-    function testMultiplyAnchored() public {
+    function test_MultiplyAnchored() public {
         string[] memory expressions = new string[](1);
         expressions[0] = "$0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT address
 
@@ -148,7 +148,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test multiply normalizes symbols.
      */
-    function testMultiplyNormalization() public {
+    function test_MultiplyNormalization() public {
         string[] memory expressions = new string[](2);
         expressions[0] = "a*b/a";
         expressions[1] = "m^4:2";
@@ -163,7 +163,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test product with empty array.
      */
-    function testProductEmpty() public view {
+    function test_ProductEmpty() public view {
         string[] memory expressions = new string[](0);
         (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
         assertEq(units.length, 0, "should return empty units array");
@@ -173,7 +173,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test product with single element.
      */
-    function testProductSingle() public view {
+    function test_ProductSingle() public view {
         string[] memory expressions = new string[](1);
         expressions[0] = "USD";
 
@@ -187,7 +187,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test product with multiple elements.
      */
-    function testProductMultiple() public view {
+    function test_ProductMultiple() public view {
         string[] memory expressions = new string[](3);
         expressions[0] = "USD";
         expressions[1] = "ETH";
@@ -205,7 +205,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test product with compound units.
      */
-    function testProductCompound() public view {
+    function test_ProductCompound() public view {
         string[] memory expressions = new string[](4);
         expressions[0] = "kg*m/s^2";
         expressions[1] = "USD/ETH";
@@ -225,7 +225,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test product normalizes symbols.
      */
-    function testProductNormalization() public view {
+    function test_ProductNormalization() public view {
         string[] memory expressions = new string[](2);
         expressions[0] = "a*b/a";
         expressions[1] = "m^4:2";
@@ -241,7 +241,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test product on non-identity unit.
      */
-    function testProductOnNonIdentity() public {
+    function test_ProductOnNonIdentity() public {
         IUnit usd = l.multiply("USD");
 
         string[] memory expressions = new string[](2);
@@ -259,7 +259,7 @@ contract UnitHelperTest is UnitBaseTest {
     /**
      * @notice Test product is view-only and doesn't create units.
      */
-    function testProductIsViewOnly() public {
+    function test_ProductIsViewOnly() public {
         string[] memory expressions = new string[](1);
         expressions[0] = "NEWTOKEN";
 

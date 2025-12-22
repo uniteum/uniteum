@@ -13,21 +13,21 @@ contract UnitTest is UnitBaseTest {
     string constant WETH_SYMBOL = "$0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
     string public constant NAME_PREFIX = "Uniteum 0.4 ";
 
-    function testOneSymbolIs1() public view {
+    function test_OneSymbolIs1() public view {
         assertEq(l.symbol(), "1");
     }
 
-    function testOneIsOwnReciprocal() public view {
+    function test_OneIsOwnReciprocal() public view {
         assertEq(address(l.reciprocal()), address(l));
     }
 
-    function testRejectLongUnits() public {
+    function test_RejectLongUnits() public {
         string memory longName = "abcdefghijklmnopqrstuvwxyz0123456789";
         vm.expectRevert(Units.BaseSymbolTooBig.selector);
         l.multiply(longName);
     }
 
-    function testSymbolicExternalUnit() public {
+    function test_SymbolicExternalUnit() public {
         string memory s = USDT_SYMBOL;
         address extoken = USDT_ADDRESS;
         IUnit wrap = unit(s);
@@ -36,7 +36,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(address(wrap.reciprocal().anchor()), address(0), "reciprocal should not have anchor");
     }
 
-    function testAnchoredUnitGeometricMean() public {
+    function test_AnchoredUnitGeometricMean() public {
         IUnit usdt = unit(USDT_SYMBOL);
         IUnit weth = unit(WETH_SYMBOL);
         IUnit prod = usdt.multiply(weth);
@@ -59,7 +59,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(recip.name(), string.concat(NAME_PREFIX, r));
     }
 
-    function testUnitUnary() public {
+    function test_UnitUnary() public {
         unaryTest("foo*foo", "foo^2", "1/foo^2");
         unaryTest("1^127", "1", "1");
         unaryTest("a^127", "a^127", "1/a^127");
@@ -86,7 +86,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(sqrtSymbol, r);
     }
 
-    function testSqrt() public {
+    function test_Sqrt() public {
         sqrtTest("a*a", "a");
         /*
         sqrtTest("a", "a^1:2");
@@ -113,7 +113,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(pu.symbol(), p);
     }
 
-    function testUnitBinary() public {
+    function test_UnitBinary() public {
         binaryTest("foo", "foo", "foo^2", "1");
         binaryTest("foo", "bar", "bar*foo", "foo/bar");
         binaryTest("foo", "baz", "baz*foo", "foo/baz");
@@ -132,7 +132,7 @@ contract UnitTest is UnitBaseTest {
         nu.product(du);
     }
 
-    function testBadProductUnits() public {
+    function test_BadProductUnits() public {
         badProductUnitTest("a^127", "a");
     }
 
@@ -141,7 +141,7 @@ contract UnitTest is UnitBaseTest {
         unit(n);
     }
 
-    function testTooBigExponent() public {
+    function test_TooBigExponent() public {
         tooBigExponent("a^128");
         tooBigExponent("1/a^128");
         tooBigExponent("1/a^128:3");
@@ -151,7 +151,7 @@ contract UnitTest is UnitBaseTest {
         );
     }
 
-    function testUnauthorizedInitializer() public {
+    function test_UnauthorizedInitializer() public {
         IUnit u = unit("u");
         vm.expectRevert(Prototype.Unauthorized.selector);
         Unit(address(u)).__initialize(bytes("Random junk"));
@@ -163,17 +163,17 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Symbol Edge Cases ============
 
-    function testEmptySymbolReverts() public {
+    function test_EmptySymbolReverts() public {
         vm.expectRevert();
         l.multiply("");
     }
 
-    function testSymbolWithSpacesReverts() public {
+    function test_SymbolWithSpacesReverts() public {
         vm.expectRevert();
         l.multiply("foo bar");
     }
 
-    function testSymbolWithSpecialCharsReverts() public {
+    function test_SymbolWithSpecialCharsReverts() public {
         vm.expectRevert();
         l.multiply("foo@bar");
         vm.expectRevert();
@@ -184,7 +184,7 @@ contract UnitTest is UnitBaseTest {
         l.multiply("foo%bar");
     }
 
-    function testValidSymbolCharacters() public {
+    function test_ValidSymbolCharacters() public {
         // Test all valid characters
         unit("abc");
         unit("ABC");
@@ -195,14 +195,14 @@ contract UnitTest is UnitBaseTest {
         unit("a1B2_3-4.5");
     }
 
-    function testSymbolExactly30Chars() public {
+    function test_SymbolExactly30Chars() public {
         // Exactly 30 chars should work
         string memory s30 = "123456789012345678901234567890";
         IUnit u = unit(s30);
         assertEq(u.symbol(), s30);
     }
 
-    function testSymbol31CharsReverts() public {
+    function test_Symbol31CharsReverts() public {
         string memory s31 = "1234567890123456789012345678901";
         vm.expectRevert(Units.BaseSymbolTooBig.selector);
         l.multiply(s31);
@@ -210,30 +210,30 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Exponent Edge Cases ============
 
-    function testZeroExponent() public {
+    function test_ZeroExponent() public {
         unaryTest("a^0", "1", "1");
     }
 
-    function testNegativeExponent() public {
+    function test_NegativeExponent() public {
         unaryTest("1/a", "1/a", "a");
         unaryTest("1/a^2", "1/a^2", "a^2");
     }
 
-    function testMaxExponent127() public {
+    function test_MaxExponent127() public {
         unaryTest("a^127", "a^127", "1/a^127");
     }
 
-    function testMinExponentNeg127() public {
+    function test_MinExponentNeg127() public {
         unaryTest("1/a^127", "1/a^127", "a^127");
     }
 
-    function testRationalExponents() public {
+    function test_RationalExponents() public {
         unaryTest("a^1:2", "a^1:2", "1/a^1:2");
         unaryTest("a^2:3", "a^2:3", "1/a^2:3");
         unaryTest("1/a^3:4", "1/a^3:4", "a^3:4");
     }
 
-    function testExponentReduction() public {
+    function test_ExponentReduction() public {
         // Test that exponents are reduced to lowest terms
         unaryTest("a^2:4", "a^1:2", "1/a^1:2");
         unaryTest("a^4:2", "a^2", "1/a^2");
@@ -241,7 +241,7 @@ contract UnitTest is UnitBaseTest {
         unaryTest("a^100:50", "a^2", "1/a^2");
     }
 
-    function testComplexExponentComposition() public {
+    function test_ComplexExponentComposition() public {
         // a^(2/3) * a^(1/3) = a^1
         IUnit a23 = unit("a^2:3");
         IUnit a13 = unit("a^1:3");
@@ -251,19 +251,19 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Reciprocal Edge Cases ============
 
-    function testReciprocalOfReciprocal() public view {
+    function test_ReciprocalOfReciprocal() public view {
         assertEq(address(U.reciprocal().reciprocal()), address(U));
         assertEq(address(V.reciprocal().reciprocal()), address(V));
     }
 
-    function testReciprocalSymmetry() public {
+    function test_ReciprocalSymmetry() public {
         IUnit foo = unit("foo");
         IUnit fooRecip = foo.reciprocal();
         assertEq(fooRecip.symbol(), "1/foo");
         assertEq(fooRecip.reciprocal().symbol(), "foo");
     }
 
-    function testReciprocalOfComplexUnit() public {
+    function test_ReciprocalOfComplexUnit() public {
         IUnit complex = unit("kg*m/s^2");
         IUnit recip = complex.reciprocal();
         assertEq(recip.symbol(), "s^2/kg/m");
@@ -271,11 +271,11 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Product Edge Cases ============
 
-    function testProductWithSelf() public {
+    function test_ProductWithSelf() public {
         binaryTest("foo", "foo", "foo^2", "1");
     }
 
-    function testProductWithReciprocal() public {
+    function test_ProductWithReciprocal() public {
         IUnit foo = unit("foo");
         IUnit fooRecip = foo.reciprocal();
         IUnit product = foo.multiply(fooRecip);
@@ -283,7 +283,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(address(product), address(l));
     }
 
-    function testProductCommutative() public {
+    function test_ProductCommutative() public {
         IUnit a = unit("a");
         IUnit b = unit("b");
         IUnit ab1 = a.multiply(b);
@@ -292,7 +292,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(ab1.symbol(), "a*b");
     }
 
-    function testProductAssociative() public {
+    function test_ProductAssociative() public {
         IUnit a = unit("a");
         IUnit b = unit("b");
         IUnit c = unit("c");
@@ -303,13 +303,13 @@ contract UnitTest is UnitBaseTest {
         assertEq(address(abc1), address(abc2));
     }
 
-    function testProductWithOne() public {
+    function test_ProductWithOne() public {
         IUnit foo = unit("foo");
         IUnit product = foo.multiply(l);
         assertEq(address(product), address(foo));
     }
 
-    function testMultipleProductsOfSameUnits() public {
+    function test_MultipleProductsOfSameUnits() public {
         IUnit a = unit("a");
         IUnit b = unit("b");
         IUnit ab1 = a.multiply(b);
@@ -319,25 +319,25 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Anchored Unit Edge Cases ============
 
-    function testAnchoredUnitFormat() public view {
+    function test_AnchoredUnitFormat() public view {
         address token = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; // USDC
         string memory expected = "$0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
         string memory actual = l.anchoredSymbol(IERC20(token));
         assertEq(actual, expected);
     }
 
-    function testAnchoredUnitCreation() public {
+    function test_AnchoredUnitCreation() public {
         IUnit wrapped = unit(USDT_SYMBOL);
         assertEq(address(wrapped.anchor()), USDT_ADDRESS);
         assertEq(wrapped.symbol(), USDT_SYMBOL);
     }
 
-    function testAnchoredReciprocalHasNoAnchor() public {
+    function test_AnchoredReciprocalHasNoAnchor() public {
         IUnit wrapped = unit(USDT_SYMBOL);
         assertEq(address(wrapped.reciprocal().anchor()), address(0));
     }
 
-    function testAnchoredWithExponent() public {
+    function test_AnchoredWithExponent() public {
         // Anchored units with exponents != 1 should not have anchor
         string memory anchoredSquared = string.concat(USDT_SYMBOL, "^2");
         IUnit u = unit(anchoredSquared);
@@ -346,13 +346,13 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Name and Metadata Edge Cases ============
 
-    function testNameFormat() public view {
+    function test_NameFormat() public view {
         assertEq(l.name(), string.concat(NAME_PREFIX, "1"));
         assertEq(U.name(), string.concat(NAME_PREFIX, "U"));
         assertEq(V.name(), string.concat(NAME_PREFIX, "1/U"));
     }
 
-    function testDecimals() public view {
+    function test_Decimals() public view {
         assertEq(l.decimals(), 18);
         assertEq(U.decimals(), 18);
         assertEq(V.decimals(), 18);
@@ -360,13 +360,13 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Duplicate Creation Edge Cases ============
 
-    function testCreateSameUnitTwiceReturnsSameAddress() public {
+    function test_CreateSameUnitTwiceReturnsSameAddress() public {
         IUnit foo1 = l.multiply("foo");
         IUnit foo2 = l.multiply("foo");
         assertEq(address(foo1), address(foo2));
     }
 
-    function testNormalizedSymbolsCreateSameUnit() public {
+    function test_NormalizedSymbolsCreateSameUnit() public {
         IUnit u1 = l.multiply("a*b/a");
         IUnit u2 = l.multiply("b");
         assertEq(address(u1), address(u2));
@@ -374,7 +374,7 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Complex Symbol Composition ============
 
-    function testTripleProduct() public {
+    function test_TripleProduct() public {
         IUnit a = unit("a");
         IUnit b = unit("b");
         IUnit c = unit("c");
@@ -382,15 +382,15 @@ contract UnitTest is UnitBaseTest {
         assertEq(abc.symbol(), "a*b*c");
     }
 
-    function testMixedProductAndDivision() public {
+    function test_MixedProductAndDivision() public {
         unaryTest("a*b/c*d/e", "a*b*d/c/e", "c*e/a/b/d");
     }
 
-    function testDeepNesting() public {
+    function test_DeepNesting() public {
         unaryTest("a/b/c/d/e", "a/b/c/d/e", "b*c*d*e/a");
     }
 
-    function testPowerThenMultiply() public {
+    function test_PowerThenMultiply() public {
         IUnit a2 = unit("a^2");
         IUnit b = unit("b");
         IUnit a2b = a2.multiply(b);
@@ -399,17 +399,17 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Invariant View Function Edge Cases ============
 
-    function testInvariantOnOne() public {
+    function test_InvariantOnOne() public {
         vm.expectRevert(IUnit.FunctionCalledOnOne.selector);
         l.invariant();
     }
 
-    function testInvariantWithSelfReverts() public {
+    function test_InvariantWithSelfReverts() public {
         vm.expectRevert(IUnit.DuplicateUnits.selector);
         U.invariant(U);
     }
 
-    function testInvariantPureFunction() public view {
+    function test_InvariantPureFunction() public view {
         uint256 w1 = l.invariant(100, 100);
         assertEq(w1, 100);
         uint256 w2 = l.invariant(100, 400);
@@ -420,7 +420,7 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Product View Function Edge Cases ============
 
-    function testProductViewDoesNotCreateUnit() public view {
+    function test_ProductViewDoesNotCreateUnit() public view {
         string memory symbolToTest = "newUnitNotYetCreated";
         (IUnit predicted, string memory canonical) = l.product(symbolToTest);
         assertEq(canonical, symbolToTest);
@@ -428,18 +428,18 @@ contract UnitTest is UnitBaseTest {
         assertEq(address(predicted).code.length, 0, "unit should not be deployed");
     }
 
-    function testProductViewNormalizesSymbol() public view {
+    function test_ProductViewNormalizesSymbol() public view {
         (, string memory canonical) = l.product("a*b/a");
         assertEq(canonical, "b");
     }
 
     // ============ Symbol Sorting Edge Cases ============
 
-    function testAlphabeticalSorting() public {
+    function test_AlphabeticalSorting() public {
         unaryTest("z*a*m*b", "a*b*m*z", "1/a/b/m/z");
     }
 
-    function testNumbersBeforeLetters() public {
+    function test_NumbersBeforeLetters() public {
         // Verify sorting order: numbers, uppercase, lowercase, special chars
         IUnit u = unit("z*A*0");
         string memory sym = u.symbol();
@@ -452,7 +452,7 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Edge Cases for Product Function with IUnit ============
 
-    function testProductCaching() public {
+    function test_ProductCaching() public {
         IUnit a = unit("a");
         IUnit b = unit("b");
 
@@ -465,7 +465,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(address(ab1), address(ab2));
     }
 
-    function testProductViewUsesCache() public {
+    function test_ProductViewUsesCache() public {
         IUnit a = unit("a");
         IUnit b = unit("b");
 
@@ -480,32 +480,32 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Exponent Overflow Edge Cases ============
 
-    function testExponentOverflowAt128() public {
+    function test_ExponentOverflowAt128() public {
         vm.expectRevert();
         l.multiply("a^128");
         vm.expectRevert();
         l.multiply("1/a^128");
     }
 
-    function testProductCausingExponentOverflow() public {
+    function test_ProductCausingExponentOverflow() public {
         badProductUnitTest("a^127", "a");
         badProductUnitTest("a^64", "a^64");
         badProductUnitTest("a^100", "a^50");
     }
 
-    function testExponentUnderflowAt128() public {
+    function test_ExponentUnderflowAt128() public {
         vm.expectRevert();
         l.multiply("1/a^128");
     }
 
     // ============ Rational Denominator Edge Cases ============
 
-    function testMaxDenominator255() public {
+    function test_MaxDenominator255() public {
         // Should work with denominator up to 255
         unaryTest("a^1:255", "a^1:255", "1/a^1:255");
     }
 
-    function testDenominatorOverflow() public {
+    function test_DenominatorOverflow() public {
         tooBigExponent("a^1:256");
         tooBigExponent("a^1:257");
         tooBigExponent("a^1:1000");
@@ -513,19 +513,19 @@ contract UnitTest is UnitBaseTest {
 
     // ============ One Unit Special Cases ============
 
-    function testOneTimesOneEqualsOne() public {
+    function test_OneTimesOneEqualsOne() public {
         IUnit one1 = l.multiply("1");
         assertEq(address(one1), address(l));
     }
 
-    function testOneToAnyPowerIsOne() public {
+    function test_OneToAnyPowerIsOne() public {
         unaryTest("1^2", "1", "1");
         unaryTest("1^100", "1", "1");
         unaryTest("1/1^50", "1", "1");
         unaryTest("1^3:7", "1", "1");
     }
 
-    function testComplexExpressionSimplifyingToOne() public {
+    function test_ComplexExpressionSimplifyingToOne() public {
         unaryTest("a*b/a/b", "1", "1");
         unaryTest("foo/foo", "1", "1");
         unaryTest("a^2/a^2", "1", "1");
@@ -533,18 +533,18 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Anchored Symbol Helper Function Edge Cases ============
 
-    function testAnchoredSymbolWithZeroAddress() public view {
+    function test_AnchoredSymbolWithZeroAddress() public view {
         string memory sym = l.anchoredSymbol(IERC20(address(0)));
         assertEq(sym, "$0x0000000000000000000000000000000000000000");
     }
 
-    function testAnchoredPredict() public view {
+    function test_AnchoredPredict() public view {
         (, string memory canonical) = l.anchoredPredict(IERC20(USDT_ADDRESS));
         assertEq(canonical, USDT_SYMBOL);
         // Can't test address until created
     }
 
-    function testAnchoredFunction() public {
+    function test_AnchoredFunction() public {
         IUnit anchored1 = l.anchored(IERC20(USDT_ADDRESS));
         assertEq(anchored1.symbol(), USDT_SYMBOL);
 
@@ -555,7 +555,7 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Malformed Expression Edge Cases ============
 
-    function testInvalidExponentFormat() public {
+    function test_InvalidExponentFormat() public {
         vm.expectRevert();
         l.multiply("a^");
 
@@ -563,12 +563,12 @@ contract UnitTest is UnitBaseTest {
         l.multiply("a^^2");
     }
 
-    function testInvalidRationalFormat() public {
+    function test_InvalidRationalFormat() public {
         vm.expectRevert();
         l.multiply("a^1:");
     }
 
-    function testLeadingOperators() public {
+    function test_LeadingOperators() public {
         vm.expectRevert();
         l.multiply("*a");
 
@@ -576,7 +576,7 @@ contract UnitTest is UnitBaseTest {
         l.multiply("/a");
     }
 
-    function testTrailingOperators() public {
+    function test_TrailingOperators() public {
         vm.expectRevert();
         l.multiply("a*");
 
@@ -584,7 +584,7 @@ contract UnitTest is UnitBaseTest {
         l.multiply("a/");
     }
 
-    function testDoubleOperators() public {
+    function test_DoubleOperators() public {
         vm.expectRevert();
         l.multiply("a**b");
 
@@ -597,7 +597,7 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Mixed Anchored and Regular Units ============
 
-    function testMixedAnchoredAndRegular() public {
+    function test_MixedAnchoredAndRegular() public {
         IUnit usd = unit("USD");
         IUnit weth = unit(USDT_SYMBOL);
         IUnit pair = usd.multiply(weth);
@@ -608,7 +608,7 @@ contract UnitTest is UnitBaseTest {
 
     // ============ Determinism Tests ============
 
-    function testUnitAddressDeterministic() public {
+    function test_UnitAddressDeterministic() public {
         IUnit foo1 = l.multiply("foo");
         address addr1 = address(foo1);
 
@@ -617,7 +617,7 @@ contract UnitTest is UnitBaseTest {
         assertEq(address(fooPredicted), addr1);
     }
 
-    function testComplexSymbolDeterministic() public {
+    function test_ComplexSymbolDeterministic() public {
         string memory complex = "kg*m^2/s^2";
         IUnit u1 = l.multiply(complex);
 

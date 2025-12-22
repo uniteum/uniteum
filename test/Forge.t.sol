@@ -16,7 +16,7 @@ contract ForgeTest is UnitBaseTest {
         owen.migrate(proto1.balanceOf(address(owen)));
     }
 
-    function testForgeSimple() public returns (int256 du, int256 dv, int256 dw) {
+    function test_ForgeSimple() public returns (int256 du, int256 dv, int256 dw) {
         owen.give(address(alex), initialOne, l);
 
         dw = alex.forge(U, 1, 1);
@@ -48,7 +48,7 @@ contract ForgeTest is UnitBaseTest {
     }
 
     /// @dev This test case exposes a bug where the reciprocal name was not normalized in __initialize.
-    function testBug() public returns (int256 du, int256 dv, int256 dw) {
+    function test_Bug() public returns (int256 du, int256 dv, int256 dw) {
         owen.give(address(alex), initialOne, l);
 
         dw = alex.forge(U, 210490, 100658);
@@ -62,7 +62,7 @@ contract ForgeTest is UnitBaseTest {
      * @dev This test case illustrates that a forger that mints a unit and its reciprocal makes money if the price changes after forging.
      * The is the complement to impermanent loss.
      */
-    function testVolatilityHedge() public returns (int256 du, int256 dv, int256 dw) {
+    function test_VolatilityHedge() public returns (int256 du, int256 dv, int256 dw) {
         owen.give(address(alex), 1e3, l);
         owen.give(address(beck), 1e7, l);
         dw = alex.forge(U, 500, 500);
@@ -77,7 +77,7 @@ contract ForgeTest is UnitBaseTest {
      * @dev This test case illustrates what happens when alex sells off 1 of two equally priced pairs.
      * beck sells after, then alex sells to rebalance
      */
-    function testForgeOrder() public returns (int256 du, int256 dv, int256 dw) {
+    function test_ForgeOrder() public returns (int256 du, int256 dv, int256 dw) {
         owen.give(address(alex), initialOne, l);
         owen.give(address(beck), initialOne, l);
         dw = alex.forge(U, 1e5, 1e5);
@@ -91,7 +91,7 @@ contract ForgeTest is UnitBaseTest {
         assertLt(alex.balance(l), beck.balance(l), "alex should have less 1 than beck");
     }
 
-    function testForgeExtreme() public returns (int256 du, int256 dv, int256 dw) {
+    function test_ForgeExtreme() public returns (int256 du, int256 dv, int256 dw) {
         owen.give(address(alex), ONE_MINTED, l);
         du = 1;
         // forge-lint: disable-next-line(unsafe-typecast)
@@ -100,14 +100,14 @@ contract ForgeTest is UnitBaseTest {
         assertEq(l.totalSupply(), 0, "supply should be depleted");
     }
 
-    function testNonReentrantRevertsWhenNotOne() public {
+    function test_NonReentrantRevertsWhenNotOne() public {
         vm.expectRevert(IUnit.FunctionNotCalledOnOne.selector);
         Unit(address(U)).__nonReentrantBefore();
         vm.expectRevert(IUnit.FunctionNotCalledOnOne.selector);
         Unit(address(U)).__nonReentrantAfter();
     }
 
-    function testForgeOneReverts() public {
+    function test_ForgeOneReverts() public {
         owen.give(address(alex), initialOne, l);
         vm.expectRevert(IUnit.FunctionCalledOnOne.selector);
         alex.forge(l, 1, 1);
@@ -133,7 +133,7 @@ contract ForgeTest is UnitBaseTest {
         alex.forge(U, 1, 0);
     }
 
-    function testRentrancyReverts() public {
+    function test_RentrancyReverts() public {
         owen.give(address(alex), initialOne, l);
 
         TestToken hookToken = alex.newToken("ALIUM", 1e6);
