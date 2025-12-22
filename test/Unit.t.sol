@@ -42,7 +42,7 @@ contract UnitTest is UnitBaseTest {
         IUnit prod = usdt.multiply(weth);
         assertEq(prod.symbol(), string.concat(WETH_SYMBOL, "*", USDT_SYMBOL), "product symbol");
         (IUnit mean, string memory actual) = prod.sqrt();
-        string memory expected = string.concat(WETH_SYMBOL, "^1\\2*", USDT_SYMBOL, "^1\\2");
+        string memory expected = string.concat(WETH_SYMBOL, "^1:2*", USDT_SYMBOL, "^1:2");
         assertEq(actual, expected, "geometric mean symbol predicted");
         prod.sqrtResolve();
         (mean, actual) = prod.sqrt();
@@ -75,7 +75,7 @@ contract UnitTest is UnitBaseTest {
             "-*.*0*2*3*4*5*6*7*8*9*A*B*C*D*E*F*G*H*I*J*K*L*M*N*O*P*Q*R*S*T*U*V*W*X*Y*Z*_*a*b*c*d*e*f*g*h*i*j*k*l*m*n*o*p*q*r*s*t*u*v*w*x*y*z",
             "1/-/./0/2/3/4/5/6/7/8/9/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/_/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z"
         );
-        unaryTest("a^15\\6", "a^5\\2", "1/a^5\\2");
+        unaryTest("a^15:6", "a^5:2", "1/a^5:2");
         unaryTest("example.com", "example.com", "1/example.com");
         unaryTest("a.b.c.d.e", "a.b.c.d.e", "1/a.b.c.d.e");
     }
@@ -89,15 +89,15 @@ contract UnitTest is UnitBaseTest {
     function testSqrt() public {
         sqrtTest("a*a", "a");
         /*
-        sqrtTest("a", "a^1\\2");
-        sqrtTest("a^3", "a^3\\2");
+        sqrtTest("a", "a^1:2");
+        sqrtTest("a^3", "a^3:2");
         sqrtTest("1^127", "1");
-        sqrtTest("a^127", "a^127\\2");
-        sqrtTest("a*b/a", "b^1\\2");
+        sqrtTest("a^127", "a^127:2");
+        sqrtTest("a*b/a", "b^1:2");
         sqrtTest("a*b/b", "1/a");
         sqrtTest("a/a*b/b", "1");
         sqrtTest("a/b", "b/a");
-        sqrtTest("a*b^3*c/a/b/c/b/c", "c^1\\2/b^1\\2");
+        sqrtTest("a*b^3*c/a/b/c/b/c", "c^1:2/b^1:2");
         */
     }
 
@@ -144,8 +144,8 @@ contract UnitTest is UnitBaseTest {
     function testTooBigExponent() public {
         tooBigExponent("a^128");
         tooBigExponent("1/a^128");
-        tooBigExponent("1/a^128\\3");
-        tooBigExponent("1/a^1\\256");
+        tooBigExponent("1/a^128:3");
+        tooBigExponent("1/a^1:256");
         tooBigExponent(
             "a^9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"
         );
@@ -228,23 +228,23 @@ contract UnitTest is UnitBaseTest {
     }
 
     function testRationalExponents() public {
-        unaryTest("a^1\\2", "a^1\\2", "1/a^1\\2");
-        unaryTest("a^2\\3", "a^2\\3", "1/a^2\\3");
-        unaryTest("1/a^3\\4", "1/a^3\\4", "a^3\\4");
+        unaryTest("a^1:2", "a^1:2", "1/a^1:2");
+        unaryTest("a^2:3", "a^2:3", "1/a^2:3");
+        unaryTest("1/a^3:4", "1/a^3:4", "a^3:4");
     }
 
     function testExponentReduction() public {
         // Test that exponents are reduced to lowest terms
-        unaryTest("a^2\\4", "a^1\\2", "1/a^1\\2");
-        unaryTest("a^4\\2", "a^2", "1/a^2");
-        unaryTest("a^6\\9", "a^2\\3", "1/a^2\\3");
-        unaryTest("a^100\\50", "a^2", "1/a^2");
+        unaryTest("a^2:4", "a^1:2", "1/a^1:2");
+        unaryTest("a^4:2", "a^2", "1/a^2");
+        unaryTest("a^6:9", "a^2:3", "1/a^2:3");
+        unaryTest("a^100:50", "a^2", "1/a^2");
     }
 
     function testComplexExponentComposition() public {
         // a^(2/3) * a^(1/3) = a^1
-        IUnit a23 = unit("a^2\\3");
-        IUnit a13 = unit("a^1\\3");
+        IUnit a23 = unit("a^2:3");
+        IUnit a13 = unit("a^1:3");
         IUnit product = a23.multiply(a13);
         assertEq(product.symbol(), "a");
     }
@@ -502,13 +502,13 @@ contract UnitTest is UnitBaseTest {
 
     function testMaxDenominator255() public {
         // Should work with denominator up to 255
-        unaryTest("a^1\\255", "a^1\\255", "1/a^1\\255");
+        unaryTest("a^1:255", "a^1:255", "1/a^1:255");
     }
 
     function testDenominatorOverflow() public {
-        tooBigExponent("a^1\\256");
-        tooBigExponent("a^1\\257");
-        tooBigExponent("a^1\\1000");
+        tooBigExponent("a^1:256");
+        tooBigExponent("a^1:257");
+        tooBigExponent("a^1:1000");
     }
 
     // ============ One Unit Special Cases ============
@@ -522,7 +522,7 @@ contract UnitTest is UnitBaseTest {
         unaryTest("1^2", "1", "1");
         unaryTest("1^100", "1", "1");
         unaryTest("1/1^50", "1", "1");
-        unaryTest("1^3\\7", "1", "1");
+        unaryTest("1^3:7", "1", "1");
     }
 
     function testComplexExpressionSimplifyingToOne() public {
@@ -565,7 +565,7 @@ contract UnitTest is UnitBaseTest {
 
     function testInvalidRationalFormat() public {
         vm.expectRevert();
-        l.multiply("a^1\\");
+        l.multiply("a^1:");
     }
 
     function testLeadingOperators() public {

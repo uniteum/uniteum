@@ -18,7 +18,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
  * |----------------------------------------------------------| ± num / den   |
  * | Type=1 | Address [1..20]            | Reserved           |  int8 | uint8 |
  * +255................................96|95................16|15....8|7.....0+
- * Example 1: meter^2\3
+ * Example 1: meter^2:3
  * |6d 6574657200000000000000000000000000000000 000000000000000000 02 03|
  * |  |                                        |                  |  |  |
  * |01 c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 000000000000000000 ff 01|
@@ -43,7 +43,7 @@ library Units {
     bytes1 constant DIVIDE_SYMBOL = "/";
     bytes1 constant MULTIPLY_SYMBOL = "*";
     bytes1 constant POWER_SYMBOL = "^";
-    bytes1 constant POWER_DIV = "\\"; // backslash escaped
+    bytes1 constant POWER_DIV = ":";
     Rational8 constant ZERO_RATIONAL_8 = Rational8.wrap(1);
     Rational8 constant ONE_RATIONAL_8 = Rational8.wrap(0x101);
     uint256 constant EXPONENT_MASK = 0xffff;
@@ -258,7 +258,7 @@ library Units {
         if (n != 1 || d != 1) {
             symbol_ = symbol_.add("^", Strings.toStringSigned(n));
             if (d != 1) {
-                symbol_ = symbol_.add("\\", Strings.toString(d));
+                symbol_ = symbol_.add(":", Strings.toString(d));
             }
         }
     }

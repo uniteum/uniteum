@@ -62,7 +62,7 @@ contract UnitHelperTest is UnitBaseTest {
         expressions[0] = "kg*m/s^2";
         expressions[1] = "USD/ETH";
         expressions[2] = "m^2";
-        expressions[3] = "kg^1\\3";
+        expressions[3] = "kg^1:3";
 
         IUnit[] memory units = helper.multiply(l, expressions);
 
@@ -70,7 +70,7 @@ contract UnitHelperTest is UnitBaseTest {
         assertEq(units[0].symbol(), "kg*m/s^2", "force unit");
         assertEq(units[1].symbol(), "USD/ETH", "exchange rate");
         assertEq(units[2].symbol(), "m^2", "area");
-        assertEq(units[3].symbol(), "kg^1\\3", "rational exponent");
+        assertEq(units[3].symbol(), "kg^1:3", "rational exponent");
     }
 
     /**
@@ -151,13 +151,13 @@ contract UnitHelperTest is UnitBaseTest {
     function testMultiplyNormalization() public {
         string[] memory expressions = new string[](2);
         expressions[0] = "a*b/a";
-        expressions[1] = "m^4\\2";
+        expressions[1] = "m^4:2";
 
         IUnit[] memory units = helper.multiply(l, expressions);
 
         assertEq(units.length, 2, "should return two units");
         assertEq(units[0].symbol(), "b", "should simplify a*b/a to b");
-        assertEq(units[1].symbol(), "m^2", "should reduce m^4\\2 to m^2");
+        assertEq(units[1].symbol(), "m^2", "should reduce m^4:2 to m^2");
     }
 
     /**
@@ -210,7 +210,7 @@ contract UnitHelperTest is UnitBaseTest {
         expressions[0] = "kg*m/s^2";
         expressions[1] = "USD/ETH";
         expressions[2] = "m^2";
-        expressions[3] = "kg^1\\3";
+        expressions[3] = "kg^1:3";
 
         (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
 
@@ -219,7 +219,7 @@ contract UnitHelperTest is UnitBaseTest {
         assertEq(symbols[0], "kg*m/s^2", "force unit");
         assertEq(symbols[1], "USD/ETH", "exchange rate");
         assertEq(symbols[2], "m^2", "area");
-        assertEq(symbols[3], "kg^1\\3", "rational exponent");
+        assertEq(symbols[3], "kg^1:3", "rational exponent");
     }
 
     /**
@@ -228,14 +228,14 @@ contract UnitHelperTest is UnitBaseTest {
     function testProductNormalization() public view {
         string[] memory expressions = new string[](2);
         expressions[0] = "a*b/a";
-        expressions[1] = "m^4\\2";
+        expressions[1] = "m^4:2";
 
         (IUnit[] memory units, string[] memory symbols) = helper.product(l, expressions);
 
         assertEq(units.length, 2, "should return two units");
         assertEq(symbols.length, 2, "should return two symbols");
         assertEq(symbols[0], "b", "should simplify a*b/a to b");
-        assertEq(symbols[1], "m^2", "should reduce m^4\\2 to m^2");
+        assertEq(symbols[1], "m^2", "should reduce m^4:2 to m^2");
     }
 
     /**
