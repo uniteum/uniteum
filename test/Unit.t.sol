@@ -11,7 +11,7 @@ contract UnitTest is UnitBaseTest {
     address constant USDT_ADDRESS = 0xffD4505B3452Dc22f8473616d50503bA9E1710Ac;
     string constant USDT_SYMBOL = "$0xffD4505B3452Dc22f8473616d50503bA9E1710Ac";
     string constant WETH_SYMBOL = "$0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-    string public constant NAME_PREFIX = "Uniteum 0.4 ";
+    string public constant NAME_PREFIX = "Uniteum 0.5 ";
 
     function test_OneSymbolIs1() public view {
         assertEq(l.symbol(), "1");

@@ -22,7 +22,7 @@ contract Unit is CloneERC20, IUnit {
     string public constant ONE_SYMBOL = "1";
 
     /// @notice The ERC-20 symbol for the central 1 token.
-    string public constant NAME_PREFIX = "Uniteum 0.4 ";
+    string public constant NAME_PREFIX = "Uniteum 0.5 ";
 
     /// @notice The total original supply of {1} minted.
     /// @dev The total supply of {1} will never exceed this value.
