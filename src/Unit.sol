@@ -159,8 +159,7 @@ contract Unit is CloneERC20, IUnit {
         _burn(holder, units);
         // If this Unit wraps an external token, send wrapped tokens to the holder.
         if (address(anchor) != address(0)) {
-            anchor.approve(address(this), units);
-            anchor.safeTransferFrom(address(this), holder, units);
+            anchor.safeTransfer(holder, units);
         }
     }
 
