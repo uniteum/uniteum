@@ -93,6 +93,8 @@ interface IUnit is IERC20Metadata, IMigratable {
      */
     function invariant(IUnit V) external view returns (IUnit W, uint256 u, uint256 v, uint256 w);
 
+    function reserves(IUnit V) external view returns (uint256 v);
+
     /**
      * @notice Compute the change of the caller's 1 balance that would result from forging this unit.
      *

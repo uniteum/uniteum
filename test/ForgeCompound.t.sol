@@ -14,7 +14,8 @@ contract ForgeCompoundTest is UnitBaseTest {
     function setUp() public virtual override {
         super.setUp();
         V = l.multiply("V");
-        W = U.multiply(V);
+        U.multiply(V).sqrtResolve();
+        (W,) = U.multiply(V).sqrt();
         owen.migrate(proto1.balanceOf(address(owen)));
         alex.addToken(V);
         alex.addToken(V.reciprocal());
@@ -25,6 +26,7 @@ contract ForgeCompoundTest is UnitBaseTest {
     function testForgeW() public returns (int256 dw) {
         owen.give(address(alex), initialOne, l);
 
+        dw = alex.forge(W, 100, 100);
         dw = alex.forge(U, 100, 100);
         dw = alex.forge(V, 100, 100);
         (W, dw) = alex.forge(U, V, -1, -1);

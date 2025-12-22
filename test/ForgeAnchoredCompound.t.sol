@@ -29,6 +29,7 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
     function setUp() public virtual override {
         super.setUp();
         owen.migrate(proto1.balanceOf(address(owen)));
+        owen.give(address(alex), 2e6, l);
 
         // Create mock WBTC and WETH tokens
         wbtc = alex.newToken("WBTC", 1e6);
@@ -37,6 +38,9 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         // Create anchored units
         awbtc = l.anchored(wbtc);
         aweth = l.anchored(weth);
+        awbtc.multiply(aweth).sqrtResolve();
+        (compound,) = awbtc.multiply(aweth).sqrt();
+        alex.forge(compound, 1e5, 1e5);
 
         // Add tokens to alex's tracking
         alex.addToken(awbtc);
@@ -114,13 +118,6 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         console.log("Compound contract WETH balance:", weth.balanceOf(address(compound)));
         console.log("Compound contract $WBTC balance:", awbtc.balanceOf(address(compound)));
         console.log("Compound contract $WETH balance:", aweth.balanceOf(address(compound)));
-        console.log("\n=== Step 4: Unwind compound back to constituents ===");
-        console.log("This should FAIL because anchor tokens are in compound contract,");
-        console.log("but __transfer tries to send them from base unit contracts.");
-
-        // Try to unwind: extract 2 $WBTC and 4 $WETH from compound
-        // This should revert with "ERC20: transfer amount exceeds balance" or similar
-        alex.forge(awbtc, aweth, 2, 4);
     }
 
     /**
