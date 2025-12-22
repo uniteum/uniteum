@@ -27,7 +27,7 @@ contract MintletTest is BaseTest {
         user = new MintletUser(USER_NAME, mintletPrototype);
     }
 
-    function testNewMintlet() public returns (Mintlet mintlet1) {
+    function test_NewMintlet() public returns (Mintlet mintlet1) {
         mintlet1 = mintletUser.newMintlet(TOKEN_NAME_1, TOKEN_SYMBOL_1, TOTAL_SUPPLY_1);
         assertEq(mintlet1.name(), TOKEN_NAME_1);
         assertEq(mintlet1.symbol(), TOKEN_SYMBOL_1);
@@ -35,7 +35,7 @@ contract MintletTest is BaseTest {
         assertEq(mintlet1.balanceOf(address(mintletUser)), TOTAL_SUPPLY_1, "balance of creator");
     }
 
-    function testCloneCanCreate() public returns (Mintlet mintlet1, Mintlet mintlet2) {
+    function test_CloneCanCreate() public returns (Mintlet mintlet1, Mintlet mintlet2) {
         mintlet1 = mintletUser.newMintlet(TOKEN_NAME_1, TOKEN_SYMBOL_1, TOTAL_SUPPLY_1);
         mintlet2 = mintletUser.newMintlet(mintlet1, TOKEN_NAME_2, TOKEN_SYMBOL_2, TOTAL_SUPPLY_2);
         assertEq(mintlet2.name(), TOKEN_NAME_2);
@@ -44,20 +44,20 @@ contract MintletTest is BaseTest {
         assertEq(mintlet2.balanceOf(address(mintletUser)), TOTAL_SUPPLY_2, "balance 2 of creator");
     }
 
-    function testCreateIdempotent() public returns (Mintlet mintlet1, Mintlet mintlet2) {
+    function test_CreateIdempotent() public returns (Mintlet mintlet1, Mintlet mintlet2) {
         mintlet1 = mintletUser.newMintlet(TOKEN_NAME_1, TOKEN_SYMBOL_1, TOTAL_SUPPLY_1);
         mintlet2 = mintletUser.newMintlet(TOKEN_NAME_1, TOKEN_SYMBOL_1, TOTAL_SUPPLY_1);
         assertEq(address(mintlet1), address(mintlet2), "mintlet create not idempotent");
         assertEq(mintlet1.balanceOf(address(mintletUser)), TOTAL_SUPPLY_1, "balance of creator");
     }
 
-    function testSelfCreateIdempotent() public returns (Mintlet mintlet1, Mintlet mintlet2) {
+    function test_SelfCreateIdempotent() public returns (Mintlet mintlet1, Mintlet mintlet2) {
         mintlet1 = mintletUser.newMintlet(TOKEN_NAME_1, TOKEN_SYMBOL_1, TOTAL_SUPPLY_1);
         mintlet2 = mintletUser.newMintlet(mintlet1, TOKEN_NAME_1, TOKEN_SYMBOL_1, TOTAL_SUPPLY_1);
         assertEq(address(mintlet1), address(mintlet2), "mintlet create not idempotent");
     }
 
-    function testOutsideInitializeReverts() public returns (Mintlet mintlet1) {
+    function test_OutsideInitializeReverts() public returns (Mintlet mintlet1) {
         mintlet1 = mintletUser.newMintlet(TOKEN_NAME_1, TOKEN_SYMBOL_1, TOTAL_SUPPLY_1);
         bytes memory initData = abi.encode(TOKEN_NAME_2, TOKEN_SYMBOL_2, TOTAL_SUPPLY_2);
         vm.expectRevert(Prototype.Unauthorized.selector);

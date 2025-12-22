@@ -22,7 +22,7 @@ contract Unit is CloneERC20, IUnit {
     string public constant ONE_SYMBOL = "1";
 
     /// @notice The ERC-20 symbol for the central 1 token.
-    string public constant NAME_PREFIX = "Uniteum 0.4 ";
+    string public constant NAME_PREFIX = "Uniteum 0.5 ";
 
     /// @notice The total original supply of {1} minted.
     /// @dev The total supply of {1} will never exceed this value.
@@ -38,6 +38,9 @@ contract Unit is CloneERC20, IUnit {
     IERC20 public anchor;
 
     /// @inheritdoc IUnit
+    mapping(IUnit => uint256) public reserves;
+
+    /// @inheritdoc IUnit
     function one() public view returns (IUnit) {
         return ONE;
     }
@@ -49,8 +52,8 @@ contract Unit is CloneERC20, IUnit {
 
     /// @inheritdoc IUnit
     function invariant() public view notOne returns (uint256 u, uint256 v, uint256 w) {
-        u = totalSupply();
-        v = reciprocal.totalSupply();
+        u = ONE.reserves(this);
+        v = ONE.reserves(reciprocal);
         w = invariant(u, v);
     }
 
@@ -64,14 +67,13 @@ contract Unit is CloneERC20, IUnit {
         } else {
             (IUnit P,) = product(V);
             (W,) = P.sqrt();
-            u = this.balanceOf(address(W));
-            v = V.balanceOf(address(W));
+            u = W.reserves(this);
+            v = W.reserves(V);
             w = invariant(u, v);
         }
     }
 
     /// @inheritdoc IUnit
-    /// @dev Revert if called on 1 via call to invariant().
     function forgeQuote(int256 du, int256 dv) public view returns (int256 dw) {
         (uint256 u0, uint256 v0, uint256 w0) = invariant();
 
@@ -88,7 +90,6 @@ contract Unit is CloneERC20, IUnit {
     }
 
     /// @inheritdoc IUnit
-    /// @dev Revert if called on 1 via call to invariant().
     function forgeQuote(IUnit V, int256 du, int256 dv) public view returns (IUnit W, int256 dw) {
         if (address(V) == address(reciprocal)) {
             W = one();
@@ -104,60 +105,48 @@ contract Unit is CloneERC20, IUnit {
             uint256 w1 = invariant(u1, v1);
 
             // forge-lint: disable-next-line(unsafe-typecast)
-            dw = 2 * (int256(w1) - int256(w0));
+            int256 floatingCount = int256(
+                uint256(
+                    ((address(anchor) == address(0)) ? 1 : 0) + ((address(reciprocal.anchor()) == address(0)) ? 1 : 0)
+                )
+            );
+            // forge-lint: disable-next-line(unsafe-typecast)
+            dw = floatingCount * (int256(w1) - int256(w0));
         }
     }
 
     /// @inheritdoc IUnit
-    /// @dev This function must be non-reentrant to thwart malicious anchor tokens.
-    /// @dev Revert if called on 1 via call to invariant().
-    function forge(int256 du, int256 dv) external nonReentrant returns (int256 dw) {
-        dw = forgeQuote(du, dv); // Also check for notOne.
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (du < 0) this.__burn(msg.sender, uint256(-du));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv < 0) Unit(address(reciprocal)).__burn(msg.sender, uint256(-dv));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dw < 0) ONE.__burn(msg.sender, uint256(-dw));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (du > 0) this.__mint(msg.sender, uint256(du));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv > 0) Unit(address(reciprocal)).__mint(msg.sender, uint256(dv));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dw > 0) ONE.__mint(msg.sender, uint256(dw));
+    function forge(int256 du, int256 dv) external returns (int256 dw) {
+        dw = forgeQuote(du, dv);
+        ONE.__forge(msg.sender, this, reciprocal, du, dv, dw);
         emit Forge(msg.sender, this, du, dv, dw);
     }
 
     //// @inheritdoc IUnit
-    /// @dev This function must be non-reentrant to thwart malicious anchor tokens.
-    /// @dev Revert if called on 1 via call to invariant().
-    function forge(IUnit V, int256 du, int256 dv) external nonReentrant returns (IUnit W, int256 dw) {
+    function forge(IUnit V, int256 du, int256 dv) external returns (IUnit W, int256 dw) {
         multiply(V).sqrtResolve();
-        (W, dw) = forgeQuote(V, du, dv); // Also check for notOne.
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (du < 0) this.__transfer(msg.sender, address(W), uint256(-du));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv < 0) Unit(address(V)).__transfer(msg.sender, address(W), uint256(-dv));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dw < 0) Unit(address(W)).__burn(msg.sender, uint256(-dw));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (du > 0) this.__transfer(address(W), msg.sender, uint256(du));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dv > 0) Unit(address(V)).__transfer(address(W), msg.sender, uint256(dv));
-        // forge-lint: disable-next-line(unsafe-typecast)
-        if (dw > 0) Unit(address(W)).__mint(msg.sender, uint256(dw));
+        (W, dw) = forgeQuote(V, du, dv);
+        ONE.__forge(msg.sender, this, reciprocal, du, dv, dw);
         emit Forge(msg.sender, this, du, dv, dw);
     }
 
-    /**
-     * @notice Burn units of the holder.
-     * @dev - Only Units with the same 1 can call this function.
-     * @param from The holder of the burned units.
-     * @param to The holder of the burned units.
-     * @param units The number of units to burn.
-     */
-    function __transfer(address from, address to, uint256 units) public onlyUnit {
-        _transfer(from, to, units);
+    /// @dev This function must be non-reentrant to thwart malicious anchor tokens.
+    function __forge(address holder, IUnit U, IUnit V, int256 du, int256 dv, int256 dw) external nonReentrant {
+        __forge(holder, U, du);
+        __forge(holder, V, dv);
+        __forge(holder, this, dw);
+        emit Forge(msg.sender, this, du, dv, dw);
+    }
+
+    function __forge(address holder, IUnit V, int256 dv) internal {
+        reserves[V] = add(V, reserves[V], dv);
+        if (dv < 0) {
+            // forge-lint: disable-next-line(unsafe-typecast)
+            Unit(address(V)).__burn(holder, uint256(-dv));
+        } else if (dv > 0) {
+            // forge-lint: disable-next-line(unsafe-typecast)
+            Unit(address(V)).__mint(holder, uint256(dv));
+        }
     }
 
     /**
@@ -166,8 +155,13 @@ contract Unit is CloneERC20, IUnit {
      * @param holder The holder of the burned units.
      * @param units The number of units to burn.
      */
-    function __burn(address holder, uint256 units) public onlyUnit {
+    function __burn(address holder, uint256 units) external onlyUnit {
         _burn(holder, units);
+        // If this Unit wraps an external token, send wrapped tokens to the holder.
+        if (address(anchor) != address(0)) {
+            anchor.approve(address(this), units);
+            anchor.safeTransferFrom(address(this), holder, units);
+        }
     }
 
     /**
@@ -176,7 +170,7 @@ contract Unit is CloneERC20, IUnit {
      * @param holder The recipient of the minted units.
      * @param units The number of units to mint.
      */
-    function __mint(address holder, uint256 units) public onlyUnit {
+    function __mint(address holder, uint256 units) external onlyUnit {
         // If this Unit wraps an external token, get wrapped tokens from the holder.
         if (address(anchor) != address(0)) {
             anchor.safeTransferFrom(holder, address(this), units);
@@ -377,18 +371,21 @@ contract Unit is CloneERC20, IUnit {
         REENTRANCY_GUARD_STORAGE.asBoolean().tstore(false);
     }
 
+    /// @inheritdoc IMigratable
     IERC20 public immutable UPSTREAM;
 
     /// @inheritdoc IMigratable
     function migrate(uint256 units) external onlyOne {
         UPSTREAM.safeTransferFrom(msg.sender, address(this), units);
-        _mint(msg.sender, units);
+        // forge-lint: disable-next-line(unsafe-typecast)
+        __forge(msg.sender, ONE, int256(units));
         emit Migrate(msg.sender, units);
     }
 
     /// @inheritdoc IMigratable
     function unmigrate(uint256 units) external onlyOne {
-        _burn(msg.sender, units);
+        // forge-lint: disable-next-line(unsafe-typecast)
+        __forge(msg.sender, ONE, -int256(units));
         UPSTREAM.safeTransferFrom(address(this), msg.sender, units);
         emit Unmigrate(msg.sender, units);
     }

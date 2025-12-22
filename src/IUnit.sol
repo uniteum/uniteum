@@ -30,14 +30,14 @@ import {IMigratable} from "./IMigratable.sol";
  *         kg IS NOT inherently connected to the concept of a kilogram.
  *
  * A pure power unit, aka term, is a base unit raised to a power using a combination of '^' and '1/' notation
- *   Division in exponents uses the '\' character instead of the '/ to simplify parsing
- *   Powers can be rational fractions represented using '\' for division in the exponent
- *     Examples: kg^2, 1/s, 1/m^2, 1/T^1\4, 1/$0xdAC17F958D2ee523a2206206994597C13D831ec7^3\7
+ *   Division in exponents uses ':' instead of '/' to simplify parsing
+ *   Powers can be rational fractions represented using ':' for division in the exponent
+ *     Examples: kg^2, 1/s, 1/m^2, 1/T^1:4, 1/$0xdAC17F958D2ee523a2206206994597C13D831ec7^3:7
  *   Operations within terms:
  *     ^ power
- *     \ divide
+ *     : divide
  * Compound units are products of pure power units separated by '*' or '/'
- *   Examples: kg*m/s^2, MSFT/USD, 1/foo^2\5/bar^7\9
+ *   Examples: kg*m/s^2, MSFT/USD, 1/foo^2:5/bar^7:9
  *   Operations combining terms:
  *     * multiply
  *     / divide
@@ -46,11 +46,6 @@ import {IMigratable} from "./IMigratable.sol";
  * - Value constraints exist between a Unit and its reciprocal, and between an anchored token and its anchor.
  * - Powers/exponentials (e.g., constraining value across A and A^k like power perpetuals) are
  *   not enforced; this may be future work.
- *
- * @dev Non-promissory hypotheses (for readers' intuition; not guarantees)
- * - As anchored collateral and unanchored participation grow, the value of "1" may tend to reflect
- *   aggregate system value (anchored + unanchored).
- * - With many diverse Units, "1" may exhibit reduced volatility via diversification effects.
  *
  * @dev Safety
  * - Anchored units are custodial: underlying tokens are held by this contract.
@@ -92,6 +87,13 @@ interface IUnit is IERC20Metadata, IMigratable {
      * @return w sqrt(u * v).
      */
     function invariant(IUnit V) external view returns (IUnit W, uint256 u, uint256 v, uint256 w);
+
+    /**
+     * @notice Return the amount of a reserve unit where this unit is the liquidity provider.
+     * @param V One of the reserve units associated with this unit.
+     * @return v The reserve amount.
+     */
+    function reserves(IUnit V) external view returns (uint256 v);
 
     /**
      * @notice Compute the change of the caller's 1 balance that would result from forging this unit.
