@@ -109,6 +109,7 @@ contract Unit is CloneERC20, IUnit {
                     ((address(anchor) == address(0)) ? 1 : 0) + ((address(reciprocal.anchor()) == address(0)) ? 1 : 0)
                 )
             );
+            // forge-lint: disable-next-line(unsafe-typecast)
             dw = floatingCount * (int256(w1) - int256(w0));
         }
     }
@@ -375,12 +376,14 @@ contract Unit is CloneERC20, IUnit {
     /// @inheritdoc IMigratable
     function migrate(uint256 units) external onlyOne {
         UPSTREAM.safeTransferFrom(msg.sender, address(this), units);
+        // forge-lint: disable-next-line(unsafe-typecast)
         __forge(msg.sender, ONE, int256(units));
         emit Migrate(msg.sender, units);
     }
 
     /// @inheritdoc IMigratable
     function unmigrate(uint256 units) external onlyOne {
+        // forge-lint: disable-next-line(unsafe-typecast)
         __forge(msg.sender, ONE, -int256(units));
         UPSTREAM.safeTransferFrom(address(this), msg.sender, units);
         emit Unmigrate(msg.sender, units);
