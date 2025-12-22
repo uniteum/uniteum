@@ -37,6 +37,7 @@ contract Unit is CloneERC20, IUnit {
     /// @inheritdoc IUnit
     IERC20 public anchor;
 
+    /// @inheritdoc IUnit
     mapping(IUnit => uint256) public reserves;
 
     /// @inheritdoc IUnit
@@ -122,7 +123,6 @@ contract Unit is CloneERC20, IUnit {
     }
 
     //// @inheritdoc IUnit
-    /// @dev This function must be non-reentrant to thwart malicious anchor tokens.
     function forge(IUnit V, int256 du, int256 dv) external returns (IUnit W, int256 dw) {
         multiply(V).sqrtResolve();
         (W, dw) = forgeQuote(V, du, dv);
@@ -371,6 +371,7 @@ contract Unit is CloneERC20, IUnit {
         REENTRANCY_GUARD_STORAGE.asBoolean().tstore(false);
     }
 
+    /// @inheritdoc IMigratable
     IERC20 public immutable UPSTREAM;
 
     /// @inheritdoc IMigratable
