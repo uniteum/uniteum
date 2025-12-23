@@ -269,7 +269,7 @@ library Units {
             return ONE_SYMBOL;
         }
 
-        string memory mul; // Do not put * before the first term
+        string memory mul = ""; // Do not put * before the first term
         unchecked {
             for (uint256 i = 0; i < terms.length; ++i) {
                 int256 n = terms[i].exponent().numerator();
@@ -587,7 +587,7 @@ library Units {
         if (!needsProcessing) return terms;
 
         uint256 termCount = terms.length;
-        uint256 j;
+        uint256 j = 0;
         Term term = terms[0].base();
         Rational exp = terms[0].exponent().toRational();
         unchecked {
