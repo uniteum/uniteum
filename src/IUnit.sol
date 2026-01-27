@@ -18,8 +18,8 @@ import {IMigratable} from "./IMigratable.sol";
  * A base unit has two varieties: anchored or unanchored.
  *
  * An anchored unit is a 1:1 custodial owner of an external ERC-20 token
- *   Its symbol is the Ethereum address of the external token prefixed with '$'.
- *   Examples: $0xdAC17F958D2ee523a2206206994597C13D831ec7 (USDT), $0x1f9840a85d5af5bf1d1762f925bdaddc4201f984 (UNI)
+ *   Its symbol is the Ethereum address of the external token.
+ *   Examples: 0xdAC17F958D2ee523a2206206994597C13D831ec7 (USDT), 0x1f9840a85d5af5bf1d1762f925bdaddc4201f984 (UNI)
  *
  * An unanchored base unit has no associated external token.
  *   Its symbol is an unbroken sequence of the following characters: 'a'-'z', 'A'-'Z', '0'-'9', '_', '-', '.'
@@ -32,7 +32,7 @@ import {IMigratable} from "./IMigratable.sol";
  * A pure power unit, aka term, is a base unit raised to a power using a combination of '^' and '1/' notation
  *   Division in exponents uses ':' instead of '/' to simplify parsing
  *   Powers can be rational fractions represented using ':' for division in the exponent
- *     Examples: kg^2, 1/s, 1/m^2, 1/T^1:4, 1/$0xdAC17F958D2ee523a2206206994597C13D831ec7^3:7
+ *     Examples: kg^2, 1/s, 1/m^2, 1/T^1:4, 1/0xdAC17F958D2ee523a2206206994597C13D831ec7^3:7
  *   Operations within terms:
  *     ^ power
  *     : divide
@@ -217,7 +217,7 @@ interface IUnit is IERC20Metadata, IMigratable {
 
     /**
      * @notice Return the symbol for an anchored token.
-     *   Example: $0xdAC17F958D2ee523a2206206994597C13D831ec7 (USDT)
+     *   Example: 0xdAC17F958D2ee523a2206206994597C13D831ec7 (USDT)
      * @param token to be anchored to.
      * @return symbol the canonical form of the string representation of the unit.
      */

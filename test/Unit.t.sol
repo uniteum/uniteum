@@ -9,8 +9,8 @@ contract UnitTest is UnitBaseTest {
     using Units for *;
 
     address constant USDT_ADDRESS = 0xffD4505B3452Dc22f8473616d50503bA9E1710Ac;
-    string constant USDT_SYMBOL = "$0xffD4505B3452Dc22f8473616d50503bA9E1710Ac";
-    string constant WETH_SYMBOL = "$0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+    string constant USDT_SYMBOL = "0xffD4505B3452Dc22f8473616d50503bA9E1710Ac";
+    string constant WETH_SYMBOL = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
     string public constant NAME_PREFIX = "Uniteum 0.5 ";
 
     function test_OneSymbolIs1() public view {
@@ -321,7 +321,7 @@ contract UnitTest is UnitBaseTest {
 
     function test_AnchoredUnitFormat() public view {
         address token = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; // USDC
-        string memory expected = "$0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+        string memory expected = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
         string memory actual = l.anchoredSymbol(IERC20(token));
         assertEq(actual, expected);
     }
@@ -535,7 +535,7 @@ contract UnitTest is UnitBaseTest {
 
     function test_AnchoredSymbolWithZeroAddress() public view {
         string memory sym = l.anchoredSymbol(IERC20(address(0)));
-        assertEq(sym, "$0x0000000000000000000000000000000000000000");
+        assertEq(sym, "0x0000000000000000000000000000000000000000");
     }
 
     function test_AnchoredPredict() public view {

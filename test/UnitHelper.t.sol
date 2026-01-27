@@ -137,12 +137,12 @@ contract UnitHelperTest is UnitBaseTest {
      */
     function test_MultiplyAnchored() public {
         string[] memory expressions = new string[](1);
-        expressions[0] = "$0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT address
+        expressions[0] = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT address
 
         IUnit[] memory units = helper.multiply(l, expressions);
 
         assertEq(units.length, 1, "should return one unit");
-        assertEq(units[0].symbol(), "$0xdAC17F958D2ee523a2206206994597C13D831ec7", "should have anchored symbol");
+        assertEq(units[0].symbol(), "0xdAC17F958D2ee523a2206206994597C13D831ec7", "should have anchored symbol");
     }
 
     /**

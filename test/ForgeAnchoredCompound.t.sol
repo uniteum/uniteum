@@ -9,7 +9,7 @@ import {TestToken} from "./TestToken.sol";
  * @title ForgeAnchoredCompoundTest
  * @notice This test exposes the problem with forging anchored units into compound units.
  *
- * The issue: When creating a compound unit from two anchored units (e.g., $WBTC * $WETH),
+ * The issue: When creating a compound unit from two anchored units (e.g., WBTC * WETH),
  * the underlying anchor tokens (WBTC and WETH) are transferred to the compound unit contract.
  * However, when unwinding the compound back to its constituents, the system attempts to
  * transfer the anchor tokens FROM the base unit contracts (which no longer have them),
@@ -72,17 +72,17 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         console.log("Alex WBTC balance before:", wbtc.balanceOf(address(alex)));
         console.log("Alex WETH balance before:", weth.balanceOf(address(alex)));
 
-        // Mint some $WBTC and $WETH by depositing real tokens
+        // Mint some WBTC and WETH by depositing real tokens
         // For now, we'll forge with "1" since pure wrapping has its own issues
-        alex.forge(awbtc, 10, 10); // Creates $WBTC + 1/$WBTC pair
-        alex.forge(aweth, 20, 20); // Creates $WETH + 1/$WETH pair
+        alex.forge(awbtc, 10, 10); // Creates WBTC + 1/WBTC pair
+        alex.forge(aweth, 20, 20); // Creates WETH + 1/WETH pair
 
-        console.log("Alex $WBTC balance:", awbtc.balanceOf(address(alex)));
-        console.log("Alex $WETH balance:", aweth.balanceOf(address(alex)));
-        console.log("$WBTC contract WBTC balance:", wbtc.balanceOf(address(awbtc)));
-        console.log("$WETH contract WETH balance:", weth.balanceOf(address(aweth)));
+        console.log("Alex WBTC balance:", awbtc.balanceOf(address(alex)));
+        console.log("Alex WETH balance:", aweth.balanceOf(address(alex)));
+        console.log("WBTC contract WBTC balance:", wbtc.balanceOf(address(awbtc)));
+        console.log("WETH contract WETH balance:", weth.balanceOf(address(aweth)));
 
-        console.log("\n=== Step 3: Create compound unit ($WBTC * $WETH) ===");
+        console.log("\n=== Step 3: Create compound unit (WBTC * WETH) ===");
 
         // First, create the compound unit contract
         awbtc.multiply(aweth).sqrtResolve();
@@ -102,22 +102,22 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         //alex.approve(address(awbtc), 100, wbtc);
         //alex.approve(address(aweth), 100, weth);
 
-        // Forge compound: deposit 5 $WBTC and 10 $WETH to get compound
+        // Forge compound: deposit 5 WBTC and 10 WETH to get compound
         alex.forge(awbtc, aweth, -5, -10);
 
         console.log("Compound unit created:", address(compound));
         console.log("Alex compound balance:", compound.balanceOf(address(alex)));
-        console.log("Alex $WBTC balance after compound:", awbtc.balanceOf(address(alex)));
-        console.log("Alex $WETH balance after compound:", aweth.balanceOf(address(alex)));
+        console.log("Alex WBTC balance after compound:", awbtc.balanceOf(address(alex)));
+        console.log("Alex WETH balance after compound:", aweth.balanceOf(address(alex)));
 
         // Check where the anchor tokens are now
         console.log("\n=== Checking anchor token locations ===");
-        console.log("$WBTC contract WBTC balance:", wbtc.balanceOf(address(awbtc)));
-        console.log("$WETH contract WETH balance:", weth.balanceOf(address(aweth)));
+        console.log("WBTC contract WBTC balance:", wbtc.balanceOf(address(awbtc)));
+        console.log("WETH contract WETH balance:", weth.balanceOf(address(aweth)));
         console.log("Compound contract WBTC balance:", wbtc.balanceOf(address(compound)));
         console.log("Compound contract WETH balance:", weth.balanceOf(address(compound)));
-        console.log("Compound contract $WBTC balance:", awbtc.balanceOf(address(compound)));
-        console.log("Compound contract $WETH balance:", aweth.balanceOf(address(compound)));
+        console.log("Compound contract WBTC balance:", awbtc.balanceOf(address(compound)));
+        console.log("Compound contract WETH balance:", aweth.balanceOf(address(compound)));
     }
 
     /**
@@ -133,10 +133,10 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         alex.approve(address(awbtc), 100, wbtc);
         alex.forge(awbtc, 10, 10);
 
-        console.log("Initial $WBTC balance:", awbtc.balanceOf(address(alex)));
+        console.log("Initial WBTC balance:", awbtc.balanceOf(address(alex)));
         console.log("Initial WBTC backing:", wbtc.balanceOf(address(awbtc)));
 
-        // Create compound using 5 $WBTC
+        // Create compound using 5 WBTC
         alex.approve(address(aweth), 100, weth);
         alex.forge(aweth, 10, 10);
 
@@ -149,17 +149,17 @@ contract ForgeAnchoredCompoundTest is UnitBaseTest {
         alex.forge(awbtc, aweth, -5, -5);
 
         console.log("\nAfter compound creation:");
-        console.log("Alex $WBTC balance:", awbtc.balanceOf(address(alex)));
-        console.log("WBTC in $WBTC contract:", wbtc.balanceOf(address(awbtc)));
+        console.log("Alex WBTC balance:", awbtc.balanceOf(address(alex)));
+        console.log("WBTC in WBTC contract:", wbtc.balanceOf(address(awbtc)));
         console.log("WBTC in compound contract:", wbtc.balanceOf(address(compound)));
 
-        // Now alex tries to burn his remaining 5 $WBTC to get WBTC back
-        // This should fail because the $WBTC contract only has 5 WBTC left,
-        // but the $WBTC token supply is 10
-        console.log("\nTrying to redeem remaining $WBTC...");
+        // Now alex tries to burn his remaining 5 WBTC to get WBTC back
+        // This should fail because the WBTC contract only has 5 WBTC left,
+        // but the WBTC token supply is 10
+        console.log("\nTrying to redeem remaining WBTC...");
         console.log("This may fail if not enough WBTC backing in base contract.");
 
-        // Burn $WBTC (this works if we only burn what's left in the base contract)
+        // Burn WBTC (this works if we only burn what's left in the base contract)
         alex.forge(awbtc, -5, 0);
 
         console.log("\nAfter redemption:");
