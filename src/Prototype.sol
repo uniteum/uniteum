@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.30;
 
-import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
+import {Clones} from "clones/Clones.sol";
 
 /**
  * @title Prototype
@@ -159,7 +159,7 @@ abstract contract Prototype {
             (instance, newSalt) = __predict(initData);
 
             if (instance.code.length == 0) {
-                instance = Clones.cloneDeterministic(PROTOTYPE, newSalt);
+                instance = Clones.cloneDeterministic(PROTOTYPE, newSalt, 0);
                 salts[instance] = newSalt;
                 Prototype(instance).__initialize(initData);
             }

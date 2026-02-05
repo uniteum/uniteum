@@ -5,7 +5,7 @@ pragma solidity ^0.8.30;
 import {UnitBaseTest} from "./UnitBase.t.sol";
 import {UnitHelper} from "../src/UnitHelper.sol";
 import {IUnit} from "../src/IUnit.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Math} from "math/Math.sol";
 
 contract UnitHelperTest is UnitBaseTest {
     UnitHelper public helper;

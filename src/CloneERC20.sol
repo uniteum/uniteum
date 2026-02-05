@@ -3,7 +3,7 @@
 pragma solidity ^0.8.30;
 
 import {Prototype} from "./Prototype.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20} from "erc20/ERC20.sol";
 
 /**
  * @title CloneERC20
@@ -60,30 +60,6 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 abstract contract CloneERC20 is ERC20, Prototype {
-    // ============ State Variables ============
-
-    /**
-     * @dev Token name, settable during clone initialization.
-     *
-     *      Unlike standard ERC-20 implementations where name is immutable,
-     *      this is stored in a regular storage slot to allow each clone to
-     *      have its own name without requiring constructor parameters.
-     *
-     *      Set during __initialize() on each clone.
-     */
-    string internal _name;
-
-    /**
-     * @dev Token symbol, settable during clone initialization.
-     *
-     *      Unlike standard ERC-20 implementations where symbol is immutable,
-     *      this is stored in a regular storage slot to allow each clone to
-     *      have its own symbol without requiring constructor parameters.
-     *
-     *      Set during __initialize() on each clone.
-     */
-    string internal _symbol;
-
     // ============ Constructor ============
 
     /**

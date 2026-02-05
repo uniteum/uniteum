@@ -5,9 +5,8 @@ pragma solidity ^0.8.30;
 import {IUnit, IMigratable, IERC20} from "./IUnit.sol";
 import {CloneERC20, Prototype} from "./CloneERC20.sol";
 import {Units, Term} from "./Units.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {TransientSlot} from "@openzeppelin/contracts/utils/TransientSlot.sol";
+import {SafeERC20} from "erc20/SafeERC20.sol";
+import {Math} from "math/Math.sol";
 
 /**
  * @title IUnit — A universal liquidity system based on symbolic units.
@@ -16,7 +15,6 @@ import {TransientSlot} from "@openzeppelin/contracts/utils/TransientSlot.sol";
 contract Unit is CloneERC20, IUnit {
     using Units for *;
     using SafeERC20 for IERC20;
-    using TransientSlot for *;
 
     /// @notice The ERC-20 symbol for the central 1 token.
     string public constant ONE_SYMBOL = "1";
@@ -343,6 +341,18 @@ contract Unit is CloneERC20, IUnit {
     bytes32 private constant REENTRANCY_GUARD_STORAGE =
         0x9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f00;
 
+    function tstore(bool value) internal {
+        assembly ("memory-safe") {
+            tstore(REENTRANCY_GUARD_STORAGE, value)
+        }
+    }
+
+    function _reentrancyGuardEntered() internal view returns (bool value) {
+        assembly ("memory-safe") {
+            value := tload(REENTRANCY_GUARD_STORAGE)
+        }
+    }
+
     modifier nonReentrant() {
         _nonReentrantBefore();
         _;
@@ -358,16 +368,16 @@ contract Unit is CloneERC20, IUnit {
     }
 
     function __nonReentrantBefore() public onlyOne {
-        if (REENTRANCY_GUARD_STORAGE.asBoolean().tload()) {
+        if (_reentrancyGuardEntered()) {
             revert ReentryForbidden();
         }
 
         // Any calls to nonReentrant after this point will fail
-        REENTRANCY_GUARD_STORAGE.asBoolean().tstore(true);
+        tstore(true);
     }
 
     function __nonReentrantAfter() public onlyOne {
-        REENTRANCY_GUARD_STORAGE.asBoolean().tstore(false);
+        tstore(false);
     }
 
     /// @inheritdoc IMigratable

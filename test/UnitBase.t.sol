@@ -7,7 +7,7 @@ import {UnitUser, User, TestToken, SafeERC20} from "./UnitUser.sol";
 import {console} from "forge-std/Test.sol";
 import {Unit, IUnit, IERC20} from "../src/Unit.sol";
 import {Units} from "../src/Units.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Math} from "math/Math.sol";
 
 contract UnitBaseTest is BaseTest {
     using Units for *;

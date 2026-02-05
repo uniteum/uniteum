@@ -6,7 +6,7 @@ import {IERC20} from "../src/Unit.sol";
 import {Random} from "./Random.sol";
 import {TestToken, IERC20Metadata} from "./TestToken.sol";
 import {Test, console} from "forge-std/Test.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeERC20} from "erc20/SafeERC20.sol";
 
 contract User is Random, Test {
     using SafeERC20 for IERC20;

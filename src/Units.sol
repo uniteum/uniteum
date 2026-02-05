@@ -4,7 +4,7 @@ pragma solidity ^0.8.30;
 
 import {Term} from "./Term.sol";
 import {Rationals, Rational, Rational8} from "./Rationals.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Strings} from "strings/Strings.sol";
 
 /**
  * @title Units
