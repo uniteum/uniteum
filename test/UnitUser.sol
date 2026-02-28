@@ -4,7 +4,7 @@ pragma solidity ^0.8.30;
 
 import {User, TestToken, console} from "./User.sol";
 import {IUnit, IERC20} from "../src/Unit.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeERC20} from "erc20/SafeERC20.sol";
 
 contract UnitUser is User {
     using SafeERC20 for IERC20;

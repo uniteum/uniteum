@@ -13,6 +13,7 @@ always_use_create_2_factory = true
 src = "src"
 out = "out"
 libs = ["lib"]
+ignored_warnings_from = ["test/", "script/"]
 
 [rpc_endpoints]
 bitsy    = "https://rpc.bitsy.network"
@@ -20,8 +21,8 @@ bitsy    = "https://rpc.bitsy.network"
 11155111 = "https://ethereum-sepolia-rpc.publicnode.com"    # Ethereum Sepolia
 42161    = "https://arbitrum-one-rpc.publicnode.com"        # Arbitrum Mainnet
 421614   = "https://arbitrum-sepolia-rpc.publicnode.com"    # Arbitrum Sepolia
-8453     = "https://base-rpc.publicnode.com"                # Base Mainnet
-84532    = "https://base-sepolia-rpc.publicnode.com"        # Base Sepolia
+8453     = "https://mainnet.base.org"                       # Base Mainnet
+84532    = "https://sepolia.base.org"                       # Base Sepolia
 56       = "https://bsc-rpc.publicnode.com"                 # BNB Mainnet
 97       = "https://bsc-testnet-rpc.publicnode.com"         # BNB Testnet
 137      = "https://polygon-rpc.publicnode.com"             # Polygon Mainnet

@@ -7,7 +7,7 @@ import {UnitUser, User, TestToken, SafeERC20} from "./UnitUser.sol";
 import {console} from "forge-std/Test.sol";
 import {Unit, IUnit, IERC20} from "../src/Unit.sol";
 import {Units} from "../src/Units.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Math} from "math/Math.sol";
 
 contract UnitBaseTest is BaseTest {
     using Units for *;
@@ -30,9 +30,12 @@ contract UnitBaseTest is BaseTest {
     function setUp() public virtual override {
         super.setUp();
 
+        console.log("UnitBaseTest setUp 1");
+
         proto1 = new TestToken("1p", ONE_MINTED);
         l = new Unit{salt: 0x0}(proto1);
         console.log("1 deployed to", address(IERC20(l)));
+        console.log("UnitBaseTest setUp 2");
 
         owen = newUser("owen");
         alex = newUser("alex");
@@ -40,12 +43,16 @@ contract UnitBaseTest is BaseTest {
 
         proto1.safeTransfer(address(owen), ONE_MINTED);
         owen.migrate(ONE_MINTED);
+        console.log("UnitBaseTest setUp 3");
 
         U = l.multiply("U");
+        console.log("UnitBaseTest setUp 4");
         V = U.reciprocal();
+        console.log("UnitBaseTest setUp 5");
 
         assertEq(U.reciprocal().symbol(), V.symbol(), "unexpected reciprocal symbol");
         assertEq(V.reciprocal().symbol(), U.symbol(), "unexpected reciprocal symbol");
+        console.log("UnitBaseTest setUp 7");
 
         assertEq(address(U.reciprocal()), address(V), "unexpected reciprocal");
         assertEq(address(V.reciprocal()), address(U), "unexpected reciprocal");

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {Rational, Rational8} from "./Rational.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Strings} from "strings/Strings.sol";
 
 /**
  * @title Rationals

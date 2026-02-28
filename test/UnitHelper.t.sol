@@ -5,7 +5,7 @@ pragma solidity ^0.8.30;
 import {UnitBaseTest} from "./UnitBase.t.sol";
 import {UnitHelper} from "../src/UnitHelper.sol";
 import {IUnit} from "../src/IUnit.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Math} from "math/Math.sol";
 
 contract UnitHelperTest is UnitBaseTest {
     UnitHelper public helper;
@@ -137,12 +137,12 @@ contract UnitHelperTest is UnitBaseTest {
      */
     function test_MultiplyAnchored() public {
         string[] memory expressions = new string[](1);
-        expressions[0] = "$0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT address
+        expressions[0] = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT address
 
         IUnit[] memory units = helper.multiply(l, expressions);
 
         assertEq(units.length, 1, "should return one unit");
-        assertEq(units[0].symbol(), "$0xdAC17F958D2ee523a2206206994597C13D831ec7", "should have anchored symbol");
+        assertEq(units[0].symbol(), "0xdAC17F958D2ee523a2206206994597C13D831ec7", "should have anchored symbol");
     }
 
     /**

@@ -4,7 +4,7 @@ pragma solidity ^0.8.30;
 
 import {Term} from "./Term.sol";
 import {Rationals, Rational, Rational8} from "./Rationals.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Strings} from "strings/Strings.sol";
 
 /**
  * @title Units
@@ -39,7 +39,6 @@ library Units {
     /// @dev Shift amount for anchor address: 20 bytes (address) + 9 bytes (reserved) = 88 bits = 0x58
     uint256 constant ANCHOR_SHIFT = 0x58;
     string constant ONE_SYMBOL = "1";
-    bytes1 constant ANCHOR_PREFIX = "$";
     bytes1 constant DIVIDE_SYMBOL = "/";
     bytes1 constant MULTIPLY_SYMBOL = "*";
     bytes1 constant POWER_SYMBOL = "^";
@@ -251,7 +250,7 @@ library Units {
             return ONE_SYMBOL;
         }
         if (t == ANCHOR_TERM_TYPE) {
-            symbol_ = string.concat("$", Strings.toChecksumHexString(a));
+            symbol_ = Strings.toChecksumHexString(a);
         } else {
             symbol_ = toString(s);
         }
@@ -269,7 +268,7 @@ library Units {
             return ONE_SYMBOL;
         }
 
-        string memory mul; // Do not put * before the first term
+        string memory mul = ""; // Do not put * before the first term
         unchecked {
             for (uint256 i = 0; i < terms.length; ++i) {
                 int256 n = terms[i].exponent().numerator();
@@ -295,15 +294,21 @@ library Units {
     }
 
     /// @dev Parses a base symbol starting at buffer[start], returns base-packed uint
-    function parseAddress(bytes memory buffer, uint256 start) internal pure returns (Term term, uint256 cursor) {
+    function parseAddress(bytes memory buffer, uint256 start)
+        internal
+        pure
+        returns (bool isAddress, Term term, uint256 cursor)
+    {
         uint256 end = buffer.length;
         cursor = start + 42;
-        cursor.mustBeLessThan(end + 1);
+        if (cursor > end) {
+            return (false, term, start);
+        }
         if (buffer[start] != "0") {
-            revert BadHexCharacter(uint8(buffer[start]));
+            return (false, term, start);
         }
         if (buffer[start + 1] != "x") {
-            revert BadHexCharacter(uint8(buffer[start + 1]));
+            return (false, term, start);
         }
         start += 2;
         uint160 result = 0;
@@ -320,10 +325,11 @@ library Units {
                     // 'a'-'f'
                     result = result * 16 + (c - 87);
                 } else {
-                    revert BadHexCharacter(c);
+                    return (false, term, start);
                 }
             }
         }
+        isAddress = true;
         term = address(result).withExponent(ONE_RATIONAL_8);
     }
 
@@ -407,10 +413,9 @@ library Units {
             cursor.mustBeLessThan(end);
 
             Term term;
-            if (buffer[cursor] == ANCHOR_PREFIX) {
-                cursor++;
-                (term, cursor) = parseAddress(buffer, cursor);
-            } else {
+            bool isAddress;
+            (isAddress, term, cursor) = parseAddress(buffer, cursor);
+            if (!isAddress) {
                 (term, cursor) = parseBase(buffer, cursor);
             }
 
@@ -587,7 +592,7 @@ library Units {
         if (!needsProcessing) return terms;
 
         uint256 termCount = terms.length;
-        uint256 j;
+        uint256 j = 0;
         Term term = terms[0].base();
         Rational exp = terms[0].exponent().toRational();
         unchecked {

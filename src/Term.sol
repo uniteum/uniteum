@@ -18,6 +18,6 @@ pragma solidity ^0.8.30;
  * |6d 6574657200000000000000000000000000000000 000000000000000000 02 03|
  * |  |                                        |                  |  |  |
  * |01 c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 000000000000000000 ff 01|
- * Example 2: 1/$[address of WETH]
+ * Example 2: 1/[address of WETH]
  */
 type Term is uint256;
